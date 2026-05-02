@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+# Logs / temp
+*.log
+*.tmp
+*.cache
+# Secrets / local config
+.env
+.env.*
+config.php
+# Optional runtime folders (only if your app generates these)
+uploads/
+storage/
+cache/
+tmp/

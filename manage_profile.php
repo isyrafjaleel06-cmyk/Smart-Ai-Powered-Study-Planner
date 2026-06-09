@@ -429,7 +429,7 @@ if (!empty($student_data['preferred_time'])) {
 <body>
 
 <div class="header">
-    <div class="logo">📚 Smart AI-Powered Study Planner</div>
+    <div class="logo">Smart AI-Powered Study Planner</div>
     <div style="display:flex; align-items:center; gap:12px;">
         <a href="manage_profile.php" class="user-profile">
             <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
@@ -457,15 +457,15 @@ if (!empty($student_data['preferred_time'])) {
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="dashboard.php"           class="sidebar-item">📊 Dashboard</a>
-        <a href="#"                        class="sidebar-item" id="studyMenu">📖 Study</a>
+        <a href="dashboard.php"           class="sidebar-item">Dashboard</a>
+        <a href="#"                        class="sidebar-item" id="studyMenu">Study</a>
         <div class="sidebar-submenu">
-            <a href="class_timetable.php"    class="sidebar-item">📅 Class Timetable</a>
-            <a href="personal_study_plan.php" class="sidebar-item">📝 Personal Plan</a>
+            <a href="class_timetable.php"    class="sidebar-item">Class Timetable</a>
+            <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
         </div>
-        <a href="timetable.php"           class="sidebar-item">⏰ Timetable</a>
-        <a href="progress.php"            class="sidebar-item">📈 Progress</a>
-        <a href="manage_profile.php"      class="sidebar-item active">⚙️ Manage Profile</a>
+        <a href="timetable.php"           class="sidebar-item">Timetable</a>
+        <a href="progress.php"            class="sidebar-item">Progress</a>
+        <a href="manage_profile.php"      class="sidebar-item active"> Manage Profile</a>
     </div>
 
     <!-- Content -->

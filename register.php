@@ -6,13 +6,11 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
     $confirm_password = trim($_POST['confirm_password']);
 
-    // Validation
     if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
         $error = 'All fields are required!';
     } elseif (strlen($username) < 3) {
@@ -24,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match!';
     } else {
-        // Check if username already exists
         $check_username = $conn->prepare("SELECT student_id FROM Student WHERE username = ?");
         $check_username->bind_param("s", $username);
         $check_username->execute();
@@ -33,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows > 0) {
             $error = 'Username already exists!';
         } else {
-            // Check if email already exists
             $check_email = $conn->prepare("SELECT student_id FROM Student WHERE email = ?");
             $check_email->bind_param("s", $email);
             $check_email->execute();
@@ -42,10 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result->num_rows > 0) {
                 $error = 'Email already registered!';
             } else {
-                // Hash password
                 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
-                // Insert into database
                 $insert = $conn->prepare("INSERT INTO Student (username, email, password) VALUES (?, ?, ?)");
                 $insert->bind_param("sss", $username, $email, $hashed_password);
 
@@ -73,6 +66,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Smart AI-Powered Study Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -97,7 +91,6 @@ $conn->close();
             overflow-x: hidden;
         }
 
-        /* Fixed background animation */
         body::before {
             content: '';
             position: fixed;
@@ -113,12 +106,8 @@ $conn->close();
         }
 
         @keyframes moveBackground {
-            0% {
-                transform: translate(0, 0);
-            }
-            100% {
-                transform: translate(50px, 50px);
-            }
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
         }
 
         .wrapper {
@@ -143,34 +132,14 @@ $conn->close();
             scrollbar-color: #667eea #f0f0f0;
         }
 
-        /* Chrome, Edge and Safari scrollbar */
-        .container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .container::-webkit-scrollbar-track {
-            background: #f0f0f0;
-            border-radius: 10px;
-        }
-
-        .container::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-
-        .container::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
-        }
+        .container::-webkit-scrollbar { width: 8px; }
+        .container::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
+        .container::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
+        .container::-webkit-scrollbar-thumb:hover { background: #764ba2; }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .icon-container {
@@ -219,17 +188,8 @@ $conn->close();
             animation: slideUp 0.4s ease-out;
         }
 
-        .alert-error {
-            background-color: #fee;
-            color: #c33;
-            border-left: 4px solid #c33;
-        }
-
-        .alert-success {
-            background-color: #efe;
-            color: #3c3;
-            border-left: 4px solid #3c3;
-        }
+        .alert-error   { background-color: #fee; color: #c33; border-left: 4px solid #c33; }
+        .alert-success { background-color: #efe; color: #3c3; border-left: 4px solid #3c3; }
 
         .form-group {
             margin-bottom: 20px;
@@ -242,11 +202,7 @@ $conn->close();
         .form-group:nth-child(3) { animation-delay: 0.3s; }
         .form-group:nth-child(4) { animation-delay: 0.4s; }
 
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
+        @keyframes fadeIn { to { opacity: 1; } }
 
         label {
             display: block;
@@ -276,13 +232,12 @@ $conn->close();
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        input[type="password"] {
-            padding-right: 45px;
+        input[type="password"],
+        input[type="text"].password-input {
+            padding-right: 48px;
         }
 
-        input::placeholder {
-            color: #bbb;
-        }
+        input::placeholder { color: #bbb; }
 
         input:focus {
             outline: none;
@@ -298,13 +253,13 @@ $conn->close();
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
             color: #667eea;
             transition: all 0.3s ease;
             padding: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 15px;
         }
 
         .password-toggle:hover {
@@ -328,27 +283,13 @@ $conn->close();
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .requirement {
-            margin: 4px 0;
-        }
-
-        .requirement.met {
-            color: #3c3;
-        }
-
-        .requirement.unmet {
-            color: #c33;
-        }
+        .requirement { margin: 4px 0; }
+        .requirement.met   { color: #3c3; }
+        .requirement.unmet { color: #c33; }
 
         .signup-button {
             width: 100%;
@@ -374,14 +315,8 @@ $conn->close();
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
         }
 
-        .signup-button:active:not(:disabled) {
-            transform: translateY(-1px);
-        }
-
-        .signup-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+        .signup-button:active:not(:disabled) { transform: translateY(-1px); }
+        .signup-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .login-link {
             margin-top: 20px;
@@ -391,9 +326,7 @@ $conn->close();
             opacity: 0;
         }
 
-        .login-link span {
-            color: #999;
-        }
+        .login-link span { color: #999; }
 
         .login-link a {
             color: #667eea;
@@ -402,10 +335,7 @@ $conn->close();
             transition: all 0.3s ease;
         }
 
-        .login-link a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
+        .login-link a:hover { color: #764ba2; text-decoration: underline; }
 
         .divider {
             display: flex;
@@ -432,26 +362,10 @@ $conn->close();
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 30px;
-                max-height: calc(100vh - 20px);
-            }
-
-            .title {
-                font-size: 24px;
-            }
-
-            input {
-                padding: 12px 14px;
-            }
-
-            input[type="password"] {
-                padding-right: 40px;
-            }
-
-            body {
-                padding: 10px;
-            }
+            .container { padding: 30px; max-height: calc(100vh - 20px); }
+            .title { font-size: 24px; }
+            input { padding: 12px 14px; }
+            body { padding: 10px; }
         }
     </style>
 </head>
@@ -463,57 +377,58 @@ $conn->close();
             </div>
 
             <h1 class="title">Sign Up</h1>
-            <p class="subtitle">Join our AI-Powered Study Planner</p>
+            <p class="subtitle">Join our Smart AI-Powered Study Planner</p>
 
             <?php if ($error): ?>
                 <div class="alert alert-error">
-                    <strong>❌ Error:</strong> <?php echo htmlspecialchars($error); ?>
+                    <strong>Error:</strong> <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($success): ?>
                 <div class="alert alert-success">
-                    <strong>✅ Success:</strong> <?php echo htmlspecialchars($success); ?>
+                    <strong>Success:</strong> <?php echo htmlspecialchars($success); ?>
                 </div>
             <?php endif; ?>
 
             <form id="registerForm" method="POST" action="register.php" novalidate>
+
                 <div class="form-group">
-                    <label for="username">👤 Username</label>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
-                        placeholder="Enter your username" 
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
                         value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>"
                         required
                     >
                 </div>
 
                 <div class="form-group">
-                    <label for="email">✉️ Email Address</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        placeholder="Enter your email" 
+                    <label for="email">Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
                         value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
                         required
                     >
                 </div>
 
                 <div class="form-group">
-                    <label for="password">🔐 Password</label>
+                    <label for="password">Password</label>
                     <div class="password-field-wrapper">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            placeholder="Create a strong password" 
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Create a strong password"
                             required
                         >
                         <button type="button" class="password-toggle" id="togglePassword" title="Show/Hide Password">
-                            👁️
+                            <i class="fa fa-eye" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="password-requirements" id="passwordRequirements">
@@ -524,22 +439,22 @@ $conn->close();
                 </div>
 
                 <div class="form-group">
-                    <label for="confirm_password">🔐 Confirm Password</label>
+                    <label for="confirm_password">Confirm Password</label>
                     <div class="password-field-wrapper">
-                        <input 
-                            type="password" 
-                            id="confirm_password" 
-                            name="confirm_password" 
-                            placeholder="Confirm your password" 
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            placeholder="Confirm your password"
                             required
                         >
                         <button type="button" class="password-toggle" id="toggleConfirmPassword" title="Show/Hide Password">
-                            👁️
+                            <i class="fa fa-eye" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="signup-button" id="submitBtn">🚀 Sign Up Now</button>
+                <button type="submit" class="signup-button" id="submitBtn">Sign Up Now</button>
             </form>
 
             <div class="divider">
@@ -547,7 +462,7 @@ $conn->close();
             </div>
 
             <div class="login-link">
-                <span>Already have an account?</span>
+                <span>Already have an account? </span>
                 <a href="login.php">Sign In Here</a>
             </div>
         </div>
@@ -556,83 +471,64 @@ $conn->close();
     <script>
         // Password visibility toggle
         const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
+        const passwordInput  = document.getElementById('password');
 
         togglePassword.addEventListener('click', function(e) {
             e.preventDefault();
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
+            this.querySelector('i').className = type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
         });
 
         // Confirm password visibility toggle
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-        const confirmPasswordInput = document.getElementById('confirm_password');
+        const confirmPasswordInput  = document.getElementById('confirm_password');
 
         toggleConfirmPassword.addEventListener('click', function(e) {
             e.preventDefault();
             const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPasswordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
+            this.querySelector('i').className = type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
         });
 
         // Real-time validation
-        const form = document.getElementById('registerForm');
-        const username = document.getElementById('username');
-        const email = document.getElementById('email');
-        const password = document.getElementById('password');
+        const form            = document.getElementById('registerForm');
+        const username        = document.getElementById('username');
+        const email           = document.getElementById('email');
+        const password        = document.getElementById('password');
         const confirmPassword = document.getElementById('confirm_password');
-        const passwordRequirements = document.getElementById('passwordRequirements');
-        const submitBtn = document.getElementById('submitBtn');
+        const passwordReqs    = document.getElementById('passwordRequirements');
+        const submitBtn       = document.getElementById('submitBtn');
 
-        // Username validation
         username.addEventListener('blur', function() {
-            if (this.value.length < 3) {
-                this.style.borderColor = '#ff6b6b';
-            } else {
-                this.style.borderColor = '#e0e0e0';
-            }
+            this.style.borderColor = this.value.length < 3 ? '#ff6b6b' : '#e0e0e0';
         });
 
-        // Email validation
         email.addEventListener('blur', function() {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(this.value)) {
-                this.style.borderColor = '#ff6b6b';
-            } else {
-                this.style.borderColor = '#e0e0e0';
-            }
+            this.style.borderColor = !emailRegex.test(this.value) ? '#ff6b6b' : '#e0e0e0';
         });
 
-        // Password validation with requirements
         password.addEventListener('focus', function() {
-            passwordRequirements.classList.add('show');
+            passwordReqs.classList.add('show');
         });
 
         password.addEventListener('input', function() {
-            const length = this.value.length >= 6;
+            const length    = this.value.length >= 6;
             const uppercase = /[A-Z]/.test(this.value);
-            const number = /[0-9]/.test(this.value);
+            const number    = /[0-9]/.test(this.value);
 
-            updateRequirement('req-length', length);
+            updateRequirement('req-length',    length);
             updateRequirement('req-uppercase', uppercase);
-            updateRequirement('req-number', number);
+            updateRequirement('req-number',    number);
 
-            // Update border color
-            if (length && uppercase && number) {
-                this.style.borderColor = '#e0e0e0';
-            } else {
-                this.style.borderColor = '#ff6b6b';
-            }
+            this.style.borderColor = (length && uppercase && number) ? '#e0e0e0' : '#ff6b6b';
         });
 
         password.addEventListener('blur', function() {
-            if (this.value.length === 0) {
-                passwordRequirements.classList.remove('show');
-            }
+            if (this.value.length === 0) passwordReqs.classList.remove('show');
         });
 
-        // Confirm password validation
         confirmPassword.addEventListener('input', function() {
             if (this.value !== password.value) {
                 this.style.borderColor = '#ff6b6b';
@@ -641,41 +537,26 @@ $conn->close();
             }
         });
 
-        // Update requirement display
         function updateRequirement(id, met) {
-            const element = document.getElementById(id);
-            if (met) {
-                element.classList.remove('unmet');
-                element.classList.add('met');
-            } else {
-                element.classList.remove('met');
-                element.classList.add('unmet');
-            }
+            const el = document.getElementById(id);
+            el.classList.toggle('met',   met);
+            el.classList.toggle('unmet', !met);
         }
 
-        // Form submission
         form.addEventListener('submit', function(e) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
+
             if (username.value.length < 3) {
-                e.preventDefault();
-                alert('Username must be at least 3 characters long!');
-                username.focus();
+                e.preventDefault(); alert('Username must be at least 3 characters long!'); username.focus();
             } else if (!emailRegex.test(email.value)) {
-                e.preventDefault();
-                alert('Please enter a valid email!');
-                email.focus();
+                e.preventDefault(); alert('Please enter a valid email!'); email.focus();
             } else if (password.value.length < 6) {
-                e.preventDefault();
-                alert('Password must be at least 6 characters long!');
-                password.focus();
+                e.preventDefault(); alert('Password must be at least 6 characters long!'); password.focus();
             } else if (password.value !== confirmPassword.value) {
-                e.preventDefault();
-                alert('Passwords do not match!');
-                confirmPassword.focus();
+                e.preventDefault(); alert('Passwords do not match!'); confirmPassword.focus();
             } else {
-                submitBtn.disabled = true;
-                submitBtn.textContent = '⏳ Registering...';
+                submitBtn.disabled    = true;
+                submitBtn.textContent = 'Registering...';
             }
         });
     </script>

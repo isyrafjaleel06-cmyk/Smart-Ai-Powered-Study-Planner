@@ -14,7 +14,7 @@ $today_plan_result = null;
 // Only fetch data if logged in
 if ($is_logged_in) {
     // Get student info
-    $student_query = $conn->prepare("SELECT email FROM Student WHERE student_id = ?");
+    $student_query = $conn->prepare("SELECT email FROM student WHERE student_id = ?");
     $student_query->bind_param("i", $student_id);
     $student_query->execute();
     $student_result = $student_query->get_result();
@@ -22,7 +22,7 @@ if ($is_logged_in) {
     $student_query->close();
 
     // Get total subjects
-    $total_subjects_query = $conn->prepare("SELECT COUNT(DISTINCT subject) as total FROM Class_Timetable WHERE student_id = ?");
+    $total_subjects_query = $conn->prepare("SELECT COUNT(DISTINCT subject) as total FROM personal_study_plan WHERE student_id = ?");
     $total_subjects_query->bind_param("i", $student_id);
     $total_subjects_query->execute();
     $total_subjects_result = $total_subjects_query->get_result();
@@ -30,27 +30,27 @@ if ($is_logged_in) {
     $total_subjects = $total_subjects_data['total'] ?? 0;
     $total_subjects_query->close();
 
-    // Get weekly study hours
-    $weekly_hours_query = $conn->prepare("SELECT SUM(available_study_hours) as total_hours FROM Personal_Study_Plan WHERE student_id = ?");
+    // Get max study hours from student table
+    $weekly_hours_query = $conn->prepare("SELECT max_study_hours FROM student WHERE student_id = ?");
     $weekly_hours_query->bind_param("i", $student_id);
     $weekly_hours_query->execute();
     $weekly_hours_result = $weekly_hours_query->get_result();
     $weekly_hours_data = $weekly_hours_result->fetch_assoc();
-    $weekly_hours = $weekly_hours_data['total_hours'] ?? 0;
+    $weekly_hours = $weekly_hours_data['max_study_hours'] ?? 0;
     $weekly_hours_query->close();
 
     // Get today's study plan
-    $today = date('l');
-    $today_plan_query = $conn->prepare("
-        SELECT DISTINCT subject, study_time 
-        FROM AI_Personal_Study_Timetable 
-        WHERE student_id = ? AND day = ?
-        LIMIT 5
-    ");
-    $today_plan_query->bind_param("is", $student_id, $today);
-    $today_plan_query->execute();
-    $today_plan_result = $today_plan_query->get_result();
-    $today_plan_query->close();
+$today = date('Y-m-d');
+$today_plan_query = $conn->prepare("
+    SELECT DISTINCT subject, start_time, end_time
+    FROM ai_personal_study_timetable 
+    WHERE student_id = ? AND study_date = ?
+    LIMIT 5
+");
+$today_plan_query->bind_param("is", $student_id, $today);
+$today_plan_query->execute();
+$today_plan_result = $today_plan_query->get_result();
+$today_plan_query->close();
 }
 
 $conn->close();
@@ -78,7 +78,6 @@ $conn->close();
             overflow-x: hidden;
         }
 
-        /* Animated background */
         body::before {
             content: '';
             position: fixed;
@@ -98,7 +97,6 @@ $conn->close();
             100% { transform: translate(50px, 50px); }
         }
 
-        /* Header */
         .header {
             position: relative;
             z-index: 20;
@@ -135,6 +133,7 @@ $conn->close();
             transition: all 0.3s ease;
             padding: 8px 15px;
             border-radius: 10px;
+            text-decoration: none;
         }
 
         .user-profile:hover {
@@ -223,7 +222,6 @@ $conn->close();
             transform: translateY(-2px);
         }
 
-        /* Main Container */
         .main-container {
             display: flex;
             position: relative;
@@ -233,7 +231,6 @@ $conn->close();
             gap: 30px;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 250px;
             background: rgba(255, 255, 255, 0.95);
@@ -248,23 +245,12 @@ $conn->close();
         }
 
         @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .sidebar-section {
-            margin-bottom: 30px;
-        }
-
-        .sidebar-section:last-child {
-            margin-bottom: 0;
-        }
+        .sidebar-section { margin-bottom: 30px; }
+        .sidebar-section:last-child { margin-bottom: 0; }
 
         .sidebar-title {
             font-size: 11px;
@@ -304,9 +290,7 @@ $conn->close();
             z-index: -1;
         }
 
-        .sidebar-item:hover::before {
-            left: 0;
-        }
+        .sidebar-item:hover::before { left: 0; }
 
         .sidebar-item:hover {
             color: #667eea;
@@ -339,9 +323,7 @@ $conn->close();
             transition: max-height 0.3s ease;
         }
 
-        .sidebar-submenu.open {
-            max-height: 200px;
-        }
+        .sidebar-submenu.open { max-height: 200px; }
 
         .sidebar-submenu .sidebar-item {
             font-size: 13px;
@@ -355,25 +337,16 @@ $conn->close();
             transition: transform 0.3s ease;
         }
 
-        .sidebar-item.expand-open .arrow {
-            transform: rotate(90deg);
-        }
+        .sidebar-item.expand-open .arrow { transform: rotate(90deg); }
 
-        /* Content Area */
         .content {
             flex: 1;
             animation: slideInRight 0.6s ease-out;
         }
 
         @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .welcome-card {
@@ -389,14 +362,8 @@ $conn->close();
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .welcome-text {
@@ -426,7 +393,6 @@ $conn->close();
             gap: 10px;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -482,9 +448,6 @@ $conn->close();
             bottom: 0;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             z-index: 5;
         }
 
@@ -498,16 +461,8 @@ $conn->close();
             width: 100%;
         }
 
-        .lock-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .lock-text {
-            font-size: 12px;
-            color: #667eea;
-            font-weight: 600;
-        }
+        .lock-icon { font-size: 32px; margin-bottom: 10px; }
+        .lock-text { font-size: 12px; color: #667eea; font-weight: 600; }
 
         .stat-content {
             position: relative;
@@ -545,12 +500,8 @@ $conn->close();
             background-clip: text;
         }
 
-        .stat-value.placeholder {
-            font-size: 24px;
-            color: #999;
-        }
+        .stat-value.placeholder { font-size: 24px; color: #999; }
 
-        /* Today's Study Plan */
         .plan-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -564,9 +515,7 @@ $conn->close();
             position: relative;
         }
 
-        .plan-card.locked {
-            opacity: 1;
-        }
+        .plan-card.locked { opacity: 1; }
 
         .plan-card.locked::before {
             content: '';
@@ -578,9 +527,6 @@ $conn->close();
             background: rgba(255, 255, 255, 0.7);
             border-radius: 20px;
             z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .plan-header {
@@ -626,19 +572,11 @@ $conn->close();
         .plan-item:nth-child(5) { animation-delay: 0.8s; }
 
         @keyframes slideInItem {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .plan-item:last-child {
-            border-bottom: none;
-        }
+        .plan-item:last-child { border-bottom: none; }
 
         .plan-item:hover {
             background-color: #f9f9f9;
@@ -646,11 +584,7 @@ $conn->close();
             border-radius: 8px;
         }
 
-        .plan-item-subject {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333;
-        }
+        .plan-item-subject { font-size: 15px; font-weight: 600; color: #333; }
 
         .plan-item-time {
             font-size: 13px;
@@ -680,23 +614,9 @@ $conn->close();
             width: 80%;
         }
 
-        .lock-icon-large {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .lock-message-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .lock-message-text {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 15px;
-        }
+        .lock-icon-large { font-size: 48px; margin-bottom: 15px; }
+        .lock-message-title { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 10px; }
+        .lock-message-text { font-size: 14px; color: #666; margin-bottom: 15px; }
 
         .login-link {
             display: inline-block;
@@ -715,100 +635,39 @@ $conn->close();
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
-            .main-container {
-                flex-direction: column;
-                padding: 20px;
-                gap: 20px;
-            }
-
+            .main-container { flex-direction: column; padding: 20px; gap: 20px; }
             .sidebar {
                 width: 100%;
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
                 height: auto;
             }
-
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         }
 
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .auth-buttons {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .sidebar {
-                grid-template-columns: repeat(2, 1fr);
-                padding: 20px;
-            }
-
-            .sidebar-section {
-                margin-bottom: 20px;
-            }
-
-            .sidebar-submenu {
-                max-height: none;
-                margin-top: 10px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stat-value {
-                font-size: 42px;
-            }
-
-            .welcome-card {
-                padding: 20px;
-            }
-
-            .plan-card {
-                padding: 20px;
-            }
-
-            .main-container {
-                padding: 15px;
-            }
-
-            .guest-notice {
-                font-size: 12px;
-            }
-
-            .user-profile {
-                padding: 6px 10px;
-            }
-
-            .user-name {
-                font-size: 12px;
-            }
+            .header { flex-direction: column; gap: 15px; text-align: center; }
+            .auth-buttons { width: 100%; justify-content: center; }
+            .sidebar { grid-template-columns: repeat(2, 1fr); padding: 20px; }
+            .sidebar-section { margin-bottom: 20px; }
+            .sidebar-submenu { max-height: none; margin-top: 10px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-value { font-size: 42px; }
+            .welcome-card { padding: 20px; }
+            .plan-card { padding: 20px; }
+            .main-container { padding: 15px; }
+            .guest-notice { font-size: 12px; }
+            .user-profile { padding: 6px 10px; }
+            .user-name { font-size: 12px; }
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 4px;
         }
-
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
@@ -843,9 +702,7 @@ $conn->close();
         <div class="sidebar">
             <div class="sidebar-section">
                 <span class="sidebar-title">Main</span>
-                <a href="dashboard.php" class="sidebar-item active">
-                    📊 Dashboard
-                </a>
+                <a href="dashboard.php" class="sidebar-item active">📊 Dashboard</a>
             </div>
 
             <div class="sidebar-section">
@@ -876,9 +733,7 @@ $conn->close();
             <?php if ($is_logged_in): ?>
                 <div class="sidebar-section">
                     <span class="sidebar-title">Settings</span>
-                    <a href="manage_profile.php" class="sidebar-item">
-                        ⚙️ Manage Profile
-                    </a>
+                    <a href="manage_profile.php" class="sidebar-item">⚙️ Manage Profile</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -929,9 +784,9 @@ $conn->close();
                     <?php endif; ?>
                     <div class="stat-content">
                         <div class="stat-icon">⏱️</div>
-                        <div class="stat-label">Weekly Study Hours</div>
+                        <div class="stat-label">Max Study Hours / Day</div>
                         <div class="stat-value <?php echo !$is_logged_in ? 'placeholder' : ''; ?>">
-                            <?php echo $is_logged_in ? number_format($weekly_hours, 1) : '-'; ?>
+                            <?php echo $is_logged_in ? $weekly_hours : '-'; ?>
                         </div>
                     </div>
                 </div>
@@ -956,7 +811,7 @@ $conn->close();
                             $has_plan = true;
                             echo '<li class="plan-item">';
                             echo '<span class="plan-item-subject">' . htmlspecialchars($plan['subject']) . '</span>';
-                            echo '<span class="plan-item-time">' . htmlspecialchars($plan['study_time']) . ' hrs</span>';
+                            echo '<span class="plan-item-time">' . date('h:i A', strtotime($plan['start_time'])) . ' - ' . date('h:i A', strtotime($plan['end_time'])) . '</span>';
                             echo '</li>';
                         }
                         if (!$has_plan) {
@@ -970,23 +825,17 @@ $conn->close();
     </div>
 
     <!-- Login Modal -->
-    <div id="loginModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); animation: fadeIn 0.3s ease-out;">
-        <div style="background-color: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: slideUp 0.4s ease-out;">
+    <div id="loginModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); animation: fadeIn 0.3s ease-out;">
+        <div style="background-color: white; margin: 5% auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.4s ease-out;">
             <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
             <h2 style="font-size: 24px; font-weight: 700; color: #333; margin-bottom: 10px;">Login Required</h2>
             <p style="font-size: 14px; color: #666; margin-bottom: 25px; line-height: 1.6;">
                 You need to log in to access this feature and view your personalized study data.
             </p>
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <a href="login.php" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-                    Login
-                </a>
-                <a href="register.php" style="background: #f0f0f0; color: #333; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.backgroundColor='#e0e0e0'" onmouseout="this.style.backgroundColor='#f0f0f0'">
-                    Sign Up
-                </a>
-                <button onclick="closeLoginModal()" style="background: white; color: #333; padding: 12px 25px; border-radius: 8px; border: 1px solid #e0e0e0; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#f5f5f5'" onmouseout="this.style.backgroundColor='white'">
-                    Close
-                </button>
+                <a href="login.php" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;">Login</a>
+                <a href="register.php" style="background: #f0f0f0; color: #333; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;">Sign Up</a>
+                <button onclick="closeLoginModal()" style="background: white; color: #333; padding: 12px 25px; border-radius: 8px; border: 1px solid #e0e0e0; font-weight: 600; cursor: pointer;">Close</button>
             </div>
         </div>
     </div>
@@ -999,7 +848,6 @@ $conn->close();
     </style>
 
     <script>
-        // Study Menu Toggle
         const studyMenu = document.getElementById('studyMenu');
         const studySubmenu = document.getElementById('studySubmenu');
 
@@ -1011,28 +859,20 @@ $conn->close();
             });
         }
 
-        // Show Login Prompt
         function showLoginPrompt(event) {
-            if (event) {
-                event.preventDefault();
-            }
+            if (event) event.preventDefault();
             document.getElementById('loginModal').style.display = 'block';
         }
 
-        // Close Login Modal
         function closeLoginModal() {
             document.getElementById('loginModal').style.display = 'none';
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('loginModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
+            if (event.target == modal) modal.style.display = 'none';
         }
 
-        // Sidebar item active state
         const sidebarItems = document.querySelectorAll('.sidebar-item:not(.disabled)');
         sidebarItems.forEach(item => {
             item.addEventListener('click', function(e) {
@@ -1043,14 +883,9 @@ $conn->close();
             });
         });
 
-        // Add hover effect to plan items
         document.querySelectorAll('.plan-item').forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateX(5px)';
-            });
-            item.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateX(0)';
-            });
+            item.addEventListener('mouseenter', function() { this.style.transform = 'translateX(5px)'; });
+            item.addEventListener('mouseleave', function() { this.style.transform = 'translateX(0)'; });
         });
     </script>
 </body>

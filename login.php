@@ -42,6 +42,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Smart AI-Powered Study Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -74,7 +75,7 @@ $conn->close();
         }
 
         @keyframes moveBackground {
-            0% { transform: translate(0, 0); }
+            0%   { transform: translate(0, 0); }
             100% { transform: translate(50px, 50px); }
         }
 
@@ -93,7 +94,7 @@ $conn->close();
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .icon {
@@ -162,10 +163,11 @@ $conn->close();
             border-radius: 10px;
             background-color: #f8f9fa;
             transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         input[type="password"] {
-            padding-right: 45px;
+            padding-right: 48px;
         }
 
         input:focus {
@@ -181,7 +183,7 @@ $conn->close();
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 15px;
             color: #667eea;
             transition: all 0.3s ease;
             padding: 5px;
@@ -227,26 +229,12 @@ $conn->close();
             font-weight: 600;
         }
 
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
+        .signup-link a:hover { text-decoration: underline; }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 30px;
-            }
-
-            .title {
-                font-size: 24px;
-            }
-
-            input {
-                padding: 12px 14px;
-            }
-
-            input[type="password"] {
-                padding-right: 40px;
-            }
+            .container { padding: 30px; }
+            .title { font-size: 24px; }
+            input { padding: 12px 14px; }
         }
     </style>
 </head>
@@ -254,7 +242,7 @@ $conn->close();
     <div class="container">
         <div class="icon">📚</div>
         <h1 class="title">Sign In</h1>
-        <p class="subtitle">Welcome Back to Study Planner</p>
+        <p class="subtitle">Welcome Back to Smart AI-Powered Study Planner</p>
 
         <?php if ($error): ?>
             <div class="alert"><?php echo htmlspecialchars($error); ?></div>
@@ -262,33 +250,33 @@ $conn->close();
 
         <form method="POST" action="login.php">
             <div class="form-group">
-                <label for="username">👤 Username</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    placeholder="Enter your username" 
+                <label for="username">USERNAME</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
                     required
                 >
             </div>
 
             <div class="form-group">
-                <label for="password">🔐 Password</label>
+                <label for="password">PASSWORD</label>
                 <div class="password-field-wrapper">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Enter your password" 
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
                         required
                     >
                     <button type="button" class="password-toggle" id="togglePassword" title="Show/Hide Password">
-                        👁️
+                        <i class="fa fa-eye" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
 
-            <button type="submit" class="login-button">🚀 Sign In</button>
+            <button type="submit" class="login-button">Sign In</button>
         </form>
 
         <div class="signup-link">
@@ -297,15 +285,14 @@ $conn->close();
     </div>
 
     <script>
-        // Password visibility toggle
         const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
+        const passwordInput  = document.getElementById('password');
 
         togglePassword.addEventListener('click', function(e) {
             e.preventDefault();
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🙈';
+            this.querySelector('i').className = type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
         });
     </script>
 </body>

@@ -12,44 +12,33 @@ $student_id = $_SESSION['student_id'];
 $username = $_SESSION['username'];
 $success = '';
 $error = '';
-$edit_mode = false;
-$edit_subject = null;
 
-// Handle Add/Update Subject
+// Handle Add Class
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     
-    if ($action === 'add_subject') {
+    if ($action === 'add_class') {
         $subject = trim($_POST['subject']);
-        $lecture_start = $_POST['lecture_start'] ?? null;
-        $lecture_end = $_POST['lecture_end'] ?? null;
-        $lecture_day = $_POST['lecture_day'] ?? null;
-        $tutorial_start = $_POST['tutorial_start'] ?? null;
-        $tutorial_end = $_POST['tutorial_end'] ?? null;
-        $tutorial_day = $_POST['tutorial_day'] ?? null;
+        $start_time = $_POST['start_time'];
+        $end_time = $_POST['end_time'];
+        $day = $_POST['day'];
 
-        if (empty($subject)) {
-            $error = 'Subject name is required!';
+        if (empty($subject) || empty($start_time) || empty($end_time) || empty($day)) {
+            $error = 'All fields are required!';
+        } elseif ($start_time >= $end_time) {
+            $error = 'End time must be after start time!';
         } else {
-            // Insert lecture class
-            if (!empty($lecture_start) && !empty($lecture_end) && !empty($lecture_day)) {
-                $insert_lecture = $conn->prepare("INSERT INTO Class_Timetable (student_id, subject, start_time, end_time, day) VALUES (?, ?, ?, ?, ?)");
-                $insert_lecture->bind_param("issss", $student_id, $subject, $lecture_start, $lecture_end, $lecture_day);
-                $insert_lecture->execute();
-                $insert_lecture->close();
+            $insert = $conn->prepare("INSERT INTO Class_Timetable (student_id, subject, start_time, end_time, day) VALUES (?, ?, ?, ?, ?)");
+            $insert->bind_param("issss", $student_id, $subject, $start_time, $end_time, $day);
+            
+            if ($insert->execute()) {
+                $success = 'Class added successfully!';
+            } else {
+                $error = 'Failed to add class!';
             }
-
-            // Insert tutorial class
-            if (!empty($tutorial_start) && !empty($tutorial_end) && !empty($tutorial_day)) {
-                $insert_tutorial = $conn->prepare("INSERT INTO Class_Timetable (student_id, subject, start_time, end_time, day) VALUES (?, ?, ?, ?, ?)");
-                $insert_tutorial->bind_param("issss", $student_id, $subject, $tutorial_start, $tutorial_end, $tutorial_day);
-                $insert_tutorial->execute();
-                $insert_tutorial->close();
-            }
-
-            $success = 'Subject added successfully!';
+            $insert->close();
         }
-    } elseif ($action === 'delete_subject') {
+    } elseif ($action === 'delete_class') {
         $class_id = $_POST['class_id'];
         $delete = $conn->prepare("DELETE FROM Class_Timetable WHERE class_id = ? AND student_id = ?");
         $delete->bind_param("ii", $class_id, $student_id);
@@ -59,55 +48,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $error = 'Failed to delete class!';
         }
         $delete->close();
-    } elseif ($action === 'update_subject') {
-        $class_id = $_POST['class_id'];
-        $start_time = $_POST['start_time'];
-        $end_time = $_POST['end_time'];
-        $day = $_POST['day'];
-
-        if (empty($start_time) || empty($end_time) || empty($day)) {
-            $error = 'All fields are required!';
-        } else {
-            // Validate time
-            if ($start_time >= $end_time) {
-                $error = 'End time must be after start time!';
-            } else {
-                $update = $conn->prepare("UPDATE Class_Timetable SET start_time = ?, end_time = ?, day = ? WHERE class_id = ? AND student_id = ?");
-                $update->bind_param("sssii", $start_time, $end_time, $day, $class_id, $student_id);
-                if ($update->execute()) {
-                    $success = 'Class updated successfully!';
-                } else {
-                    $error = 'Failed to update class!';
-                }
-                $update->close();
-            }
-        }
     }
 }
 
 // Get all classes for this student
-$classes_query = $conn->prepare("SELECT class_id, subject, start_time, end_time, day FROM Class_Timetable WHERE student_id = ? ORDER BY day, start_time");
+$classes_query = $conn->prepare("SELECT class_id, subject, start_time, end_time, day FROM Class_Timetable WHERE student_id = ? ORDER BY day, start_time, subject");
 $classes_query->bind_param("i", $student_id);
 $classes_query->execute();
 $classes_result = $classes_query->get_result();
 $classes_query->close();
 
-// Group classes by subject
-$subjects_classes = array();
-while ($class = $classes_result->fetch_assoc()) {
-    if (!isset($subjects_classes[$class['subject']])) {
-        $subjects_classes[$class['subject']] = array();
-    }
-    $subjects_classes[$class['subject']][] = $class;
-}
+$classes = array();
+$colors = ['#90EE90', '#87CEEB', '#FFB6C1', '#FFD700', '#FFA500', '#DDA0DD'];
+$colorIndex = 0;
+$maxEndTime = '18:00';
+$hasEveningClasses = false;
 
-// Check if edit mode
-if (isset($_GET['edit'])) {
-    $edit_subject = $_GET['edit'];
-    $edit_mode = true;
+while ($class = $classes_result->fetch_assoc()) {
+    $class['color'] = $colors[$colorIndex % count($colors)];
+    $classes[] = $class;
+    $colorIndex++;
+    
+    // Check if class ends after 6:00 PM
+    if ($class['end_time'] > '18:00') {
+        $maxEndTime = $class['end_time'];
+        $hasEveningClasses = true;
+    }
 }
 
 $conn->close();
+
+// Function to get classes for a specific time slot
+function getClassesForSlot($classes, $day, $time) {
+    $slotClasses = array();
+    foreach ($classes as $class) {
+        if ($class['day'] === $day) {
+            $startTime = strtotime($class['start_time']);
+            $endTime = strtotime($class['end_time']);
+            $currentTime = strtotime($time);
+
+            if ($currentTime >= $startTime && $currentTime < $endTime) {
+                $slotClasses[] = $class;
+            }
+        }
+    }
+    return $slotClasses;
+}
+
+// Generate time slots based on max end time
+function generateTimeSlots($maxEndTime) {
+    $times = array();
+    $startHour = 8;
+    $endHour = intval(substr($maxEndTime, 0, 2));
+    
+    // If there's no class after 6 PM, go until 18:00
+    if ($endHour <= 18) {
+        $endHour = 18;
+    } else {
+        // If there are evening classes, extend to 24:00 (midnight)
+        $endHour = 24;
+    }
+    
+    for ($i = $startHour; $i < $endHour; $i++) {
+        $times[] = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+    }
+    
+    return $times;
+}
+
+$times = generateTimeSlots($maxEndTime);
 ?>
 
 <!DOCTYPE html>
@@ -174,18 +183,26 @@ $conn->close();
             background-clip: text;
         }
 
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             padding: 8px 15px;
             border-radius: 10px;
+            text-decoration: none;
         }
 
         .user-profile:hover {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            transform: translateY(-2px);
         }
 
         .user-avatar {
@@ -200,11 +217,37 @@ $conn->close();
             font-size: 18px;
             font-weight: 700;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover .user-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         .user-name {
             font-size: 14px;
             font-weight: 600;
+            color: #667eea;
+        }
+
+        .logout-btn {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
             color: #667eea;
         }
 
@@ -382,221 +425,15 @@ $conn->close();
             border-left: 4px solid #388e3c;
         }
 
-        /* Subject Card */
-        .subject-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
-                        0 0 40px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideUp 0.6s ease-out forwards;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .subject-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15),
-                        0 0 50px rgba(102, 126, 234, 0.2);
-        }
-
-        .subject-header {
+        /* Content Wrapper */
+        .content-wrapper {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            gap: 20px;
         }
 
-        .subject-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .subject-icon {
-            font-size: 24px;
-        }
-
-        .subject-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-edit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-edit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-        }
-
-        .btn-delete {
-            background: #ffebee;
-            color: #d32f2f;
-            border: 1px solid #d32f2f;
-        }
-
-        .btn-delete:hover {
-            background: #d32f2f;
-            color: white;
-        }
-
-        .btn-save {
-            background: #e8f5e9;
-            color: #388e3c;
-            border: 1px solid #388e3c;
-        }
-
-        .btn-save:hover {
-            background: #388e3c;
-            color: white;
-        }
-
-        .btn-cancel {
-            background: #f5f5f5;
-            color: #666;
-            border: 1px solid #e0e0e0;
-        }
-
-        .btn-cancel:hover {
-            background: #e0e0e0;
-        }
-
-        /* Class Entry */
-        .class-entry {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .class-entry.edit-mode {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            border: 2px solid #667eea;
-        }
-
-        .class-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #667eea;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .class-times {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .time-input {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .time-input label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .time-input input,
-        .time-input select {
-            padding: 8px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: all 0.3s ease;
-            background-color: white;
-            color: #333;
-        }
-
-        .time-input input:disabled,
-        .time-input select:disabled {
-            background-color: #f0f0f0;
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .time-input input:focus,
-        .time-input select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .class-entry-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .class-action-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-
-        .btn-save-class {
-            background: #e8f5e9;
-            color: #388e3c;
-            border: 1px solid #388e3c;
-            flex: 1;
-        }
-
-        .btn-save-class:hover {
-            background: #388e3c;
-            color: white;
-        }
-
-        .btn-cancel-edit {
-            background: #f5f5f5;
-            color: #666;
-            border: 1px solid #e0e0e0;
-            flex: 1;
-        }
-
-        .btn-cancel-edit:hover {
-            background: #e0e0e0;
-        }
-
-        /* Add Subject Form */
-        .add-subject-card {
+        /* Calendar Card */
+        .calendar-card {
+            flex: 2;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
@@ -604,12 +441,288 @@ $conn->close();
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
                         0 0 40px rgba(102, 126, 234, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out 0.1s forwards;
+            opacity: 0;
+            overflow-x: auto;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title::before {
+            content: '';
+            font-size: 24px;
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow-x: auto;
+            background: white;
+            min-width: 100%;
+        }
+
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .calendar-header th {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            font-size: 14px;
+        }
+
+        .time-column {
+            width: 80px;
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .day-column {
+            width: calc(100% / 7);
+            position: relative;
+            height: 100px;
+            border-right: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            padding: 5px;
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        .day-column:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .day-column:last-child {
+            border-right: none;
+        }
+
+        .time-row td {
+            border-bottom: 1px solid #e0e0e0;
+            height: 100px;
+            padding: 5px;
+            position: relative;
+        }
+
+        .time-row:last-child td {
+            border-bottom: none;
+        }
+
+        .time-cell {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            background: #f9f9f9;
+            font-weight: 500;
+        }
+
+        /* Morning Classes (8-12) */
+        .time-row.morning .time-cell {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.05) 100%);
+            color: #f57f17;
+        }
+
+        /* Afternoon Classes (12-18) */
+        .time-row.afternoon .time-cell {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.05) 100%);
+            color: #388e3c;
+        }
+
+        /* Evening Classes (18-24) */
+        .time-row.evening .time-cell {
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(63, 81, 181, 0.1) 100%);
+            color: #1a237e;
+            font-weight: 700;
+        }
+
+        .time-row.evening td {
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(63, 81, 181, 0.05) 100%);
+        }
+
+        /* Night Classes (24) */
+        .time-row.night .time-cell {
+            background: linear-gradient(135deg, rgba(33, 33, 33, 0.1) 0%, rgba(33, 33, 33, 0.1) 100%);
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        .time-row.night td {
+            background: linear-gradient(135deg, rgba(33, 33, 33, 0.05) 0%, rgba(33, 33, 33, 0.05) 100%);
+        }
+
+        .classes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .class-block {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 35px;
+            flex-shrink: 0;
+        }
+
+        .class-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-block-content {
+            width: 100%;
+        }
+
+        .class-block-title {
+            font-weight: 700;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .class-block-time {
+            font-size: 8px;
+            opacity: 0.9;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .class-block-delete {
+            background: rgba(255, 255, 255, 0.4);
+            border: none;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 8px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            width: 100%;
+            max-width: 50px;
+        }
+
+        .class-block-delete:hover {
+            background: rgba(255, 0, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .add-button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.2);
+            border: 2px solid #667eea;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin: auto;
+        }
+
+        .add-button:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Time Period Badges */
+        .time-period-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-morning {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+        }
+
+        .badge-evening {
+            background: linear-gradient(135deg, #3F51B5 0%, #1A237E 100%);
+            color: white;
+        }
+
+        .badge-night {
+            background: linear-gradient(135deg, #424242 0%, #000000 100%);
+            color: white;
+        }
+
+        /* Calendar Note */
+        .calendar-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 155, 229, 0.1) 100%);
+            border-left: 4px solid #2196F3;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+
+        /* Add Class Panel */
+        .add-class-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
+                        0 0 40px rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: fit-content;
             animation: slideUp 0.6s ease-out 0.2s forwards;
             opacity: 0;
         }
 
-        .form-section-title {
-            font-size: 16px;
+        .panel-title {
+            font-size: 18px;
             font-weight: 700;
             color: #333;
             margin-bottom: 20px;
@@ -620,8 +733,8 @@ $conn->close();
             gap: 10px;
         }
 
-        .form-section-title::before {
-            content: '📝';
+        .panel-title::before {
+            content: '';
             font-size: 20px;
         }
 
@@ -635,7 +748,6 @@ $conn->close();
         .form-group:nth-child(2) { animation-delay: 0.4s; }
         .form-group:nth-child(3) { animation-delay: 0.5s; }
         .form-group:nth-child(4) { animation-delay: 0.6s; }
-        .form-group:nth-child(5) { animation-delay: 0.7s; }
 
         @keyframes fadeIn {
             to {
@@ -645,16 +757,15 @@ $conn->close();
 
         label {
             display: block;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
             color: #333;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        input[type="text"],
-        input[type="time"],
+        input,
         select {
             width: 100%;
             padding: 12px 15px;
@@ -667,12 +778,11 @@ $conn->close();
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        input[type="text"]::placeholder {
+        input::placeholder {
             color: #bbb;
         }
 
-        input[type="text"]:focus,
-        input[type="time"]:focus,
+        input:focus,
         select:focus {
             outline: none;
             border-color: #667eea;
@@ -681,35 +791,54 @@ $conn->close();
             transform: translateY(-2px);
         }
 
-        .form-row {
+        .time-input-group {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
-        /* Button Group */
-        .button-group {
+        .color-picker {
             display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 25px;
-            animation: slideUp 0.6s ease-out 0.8s forwards;
-            opacity: 0;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
             color: white;
-            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            margin-top: 25px;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            animation: slideUp 0.6s ease-out 0.7s forwards;
+            opacity: 0;
         }
 
         .btn-primary:hover {
@@ -718,17 +847,21 @@ $conn->close();
         }
 
         .btn-secondary {
-            background: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
             color: #667eea;
-            padding: 12px 30px;
+            background: white;
             border: 2px solid #667eea;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            margin-top: 15px;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-secondary:hover {
@@ -736,33 +869,27 @@ $conn->close();
             color: white;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 30px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
 
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .empty-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .empty-text {
-            font-size: 14px;
-            color: #999;
-            margin-bottom: 25px;
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
         }
 
         /* Responsive */
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+        }
+
         @media (max-width: 1024px) {
             .main-container {
                 flex-direction: column;
@@ -782,14 +909,6 @@ $conn->close();
                 min-width: 120px;
                 text-align: center;
             }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .class-times {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 768px) {
@@ -806,341 +925,318 @@ $conn->close();
                 font-size: 22px;
             }
 
-            .subject-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
+            .calendar-table {
+                min-width: 800px;
             }
 
-            .subject-actions {
-                width: 100%;
+            .day-column {
+                height: 80px;
             }
 
-            .action-btn {
-                flex: 1;
-                text-align: center;
+            .time-row td {
+                height: 80px;
             }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .btn-primary,
-            .btn-secondary {
-                width: 100%;
-            }
-
-            .class-entry-actions {
-                flex-direction: column;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="logo">📚 Smart AI-Powered Study Planner</div>
-        <a href="manage_profile.php" class="user-profile" title="Manage Profile">
-            <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
-            <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
-        </a>
+        <div class="logo">Smart AI-Powered Study Planner</div>
+        <div class="user-section">
+            <a href="manage_profile.php" class="user-profile">
+                <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
+                <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
+            </a>
+           
+        </div>
     </div>
 
     <!-- Main Container -->
     <div class="main-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <a href="dashboard.php" class="sidebar-item">
-                📊 Dashboard
-            </a>
-            <a href="#" class="sidebar-item" id="studyMenu">
-                📖 Study
-            </a>
+            <a href="dashboard.php" class="sidebar-item"> Dashboard</a>
+            <a href="#" class="sidebar-item" id="studyMenu">Study</a>
             <div class="sidebar-submenu">
-                <a href="class_timetable.php" class="sidebar-item active">
-                    📅 Class Timetable
-                </a>
-                <a href="personal_study_plan.php" class="sidebar-item">
-                    📝 Personal Plan
-                </a>
+                <a href="class_timetable.php" class="sidebar-item active">Class Timetable</a>
+                <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
             </div>
-            <a href="timetable.php" class="sidebar-item">
-                ⏰ Timetable
-            </a>
-            <a href="progress.php" class="sidebar-item">
-                📈 Progress
-            </a>
-            <a href="manage_profile.php" class="sidebar-item">
-                ⚙️ Manage Profile
-            </a>
+            <a href="timetable.php" class="sidebar-item">Timetable</a>
+            <a href="progress.php" class="sidebar-item">Progress</a>
+            <a href="manage_profile.php" class="sidebar-item">Manage Profile</a>
         </div>
 
-        <!-- Content Area -->
+        <!-- Content -->
         <div class="content">
             <!-- Page Header -->
             <div class="page-header">
-                <h1 class="page-title">📅 Class Timetable</h1>
-                <p class="page-subtitle">Manage your class schedule including lectures and tutorials</p>
+                <h1 class="page-title">
+                     Class Timetable
+                    <?php 
+                        if ($hasEveningClasses && $maxEndTime >= '23:00') {
+                            echo '<span class="time-period-badge badge-night">🌙 Late Night (Up to Midnight)</span>';
+                        } elseif ($hasEveningClasses) {
+                            echo '<span class="time-period-badge badge-evening">🌙 Evening Classes</span>';
+                        }
+                    ?>
+                </h1>
+                <p class="page-subtitle">Manage your class schedule - Add multiple subjects in the same time slot</p>
             </div>
 
             <?php if ($error): ?>
-                <div class="alert alert-error">
-                    ❌ <?php echo htmlspecialchars($error); ?>
-                </div>
+                <div class="alert alert-error">❌ <?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
             <?php if ($success): ?>
-                <div class="alert alert-success">
-                    ✅ <?php echo htmlspecialchars($success); ?>
-                </div>
+                <div class="alert alert-success">✅ <?php echo htmlspecialchars($success); ?></div>
             <?php endif; ?>
 
-            <!-- Display Existing Classes -->
-            <?php if (!empty($subjects_classes)): ?>
-                <?php 
-                $delay = 0;
-                foreach ($subjects_classes as $subject => $classes): 
-                ?>
-                    <div class="subject-card" style="animation-delay: <?php echo $delay * 0.1; ?>s;">
-                        <div class="subject-header">
-                            <div class="subject-name">
-                                <span class="subject-icon">📚</span>
-                                <?php echo htmlspecialchars($subject); ?>
-                            </div>
-                            <div class="subject-actions">
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete all classes for this subject?');">
-                                    <input type="hidden" name="action" value="delete_subject">
-                                    <input type="hidden" name="class_id" value="<?php echo $classes[0]['class_id']; ?>">
-                                    <button type="submit" class="action-btn btn-delete">
-                                        🗑️ Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Calendar Card -->
+                <div class="calendar-card">
+                    <div class="card-title">Your Weekly Schedule</div>
 
-                        <?php foreach ($classes as $index => $class): ?>
-                            <div class="class-entry" id="class-<?php echo $class['class_id']; ?>">
-                                <span class="class-label">
-                                    <?php echo $index == 0 ? '🎓 Lecture Class' : '👥 Tutorial Class'; ?>
-                                </span>
-                                <div class="class-times">
-                                    <div class="time-input">
-                                        <label>Start Time</label>
-                                        <input 
-                                            type="time" 
-                                            class="start-time-<?php echo $class['class_id']; ?>" 
-                                            value="<?php echo htmlspecialchars($class['start_time']); ?>" 
-                                            disabled
-                                        >
-                                    </div>
-                                    <div class="time-input">
-                                        <label>End Time</label>
-                                        <input 
-                                            type="time" 
-                                            class="end-time-<?php echo $class['class_id']; ?>" 
-                                            value="<?php echo htmlspecialchars($class['end_time']); ?>" 
-                                            disabled
-                                        >
-                                    </div>
-                                    <div class="time-input">
-                                        <label>Day</label>
-                                        <select class="day-<?php echo $class['class_id']; ?>" disabled>
-                                            <option value="Monday" <?php echo $class['day'] == 'Monday' ? 'selected' : ''; ?>>Monday</option>
-                                            <option value="Tuesday" <?php echo $class['day'] == 'Tuesday' ? 'selected' : ''; ?>>Tuesday</option>
-                                            <option value="Wednesday" <?php echo $class['day'] == 'Wednesday' ? 'selected' : ''; ?>>Wednesday</option>
-                                            <option value="Thursday" <?php echo $class['day'] == 'Thursday' ? 'selected' : ''; ?>>Thursday</option>
-                                            <option value="Friday" <?php echo $class['day'] == 'Friday' ? 'selected' : ''; ?>>Friday</option>
-                                            <option value="Saturday" <?php echo $class['day'] == 'Saturday' ? 'selected' : ''; ?>>Saturday</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="class-entry-actions" id="actions-<?php echo $class['class_id']; ?>" style="display: none;">
-                                    <form method="POST" action="class_timetable.php" style="display: flex; gap: 8px; width: 100%;">
-                                        <input type="hidden" name="action" value="update_subject">
-                                        <input type="hidden" name="class_id" value="<?php echo $class['class_id']; ?>">
-                                        <input 
-                                            type="hidden" 
-                                            name="start_time" 
-                                            id="start-time-input-<?php echo $class['class_id']; ?>"
-                                            value="<?php echo htmlspecialchars($class['start_time']); ?>"
-                                        >
-                                        <input 
-                                            type="hidden" 
-                                            name="end_time" 
-                                            id="end-time-input-<?php echo $class['class_id']; ?>"
-                                            value="<?php echo htmlspecialchars($class['end_time']); ?>"
-                                        >
-                                        <input 
-                                            type="hidden" 
-                                            name="day" 
-                                            id="day-input-<?php echo $class['class_id']; ?>"
-                                            value="<?php echo htmlspecialchars($class['day']); ?>"
-                                        >
-                                        <button type="submit" class="class-action-btn btn-save-class">💾 Save</button>
-                                        <button type="button" class="class-action-btn btn-cancel-edit" onclick="cancelEdit(<?php echo $class['class_id']; ?>)">❌ Cancel</button>
-                                    </form>
-                                </div>
-                                <div class="class-entry-actions" id="edit-btn-<?php echo $class['class_id']; ?>">
-                                    <button class="action-btn btn-edit" onclick="editClass(<?php echo $class['class_id']; ?>)" style="width: 100%;">✏️ Edit</button>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                    <!-- Calendar Grid -->
+                    <div class="calendar-grid">
+                        <table class="calendar-table">
+                            <thead class="calendar-header">
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Saturday</th>
+                                    <th>Sunday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+                                foreach ($times as $time) {
+                                    $hour = intval(substr($time, 0, 2));
+                                    
+                                    // Determine time period
+                                    if ($hour >= 8 && $hour < 12) {
+                                        $rowClass = 'time-row morning';
+                                    } elseif ($hour >= 12 && $hour < 18) {
+                                        $rowClass = 'time-row afternoon';
+                                    } elseif ($hour >= 18 && $hour < 24) {
+                                        $rowClass = 'time-row evening';
+                                    } else {
+                                        $rowClass = 'time-row night';
+                                    }
+                                    
+                                    echo '<tr class="' . $rowClass . '">';
+                                    
+                                    // Format time display - show midnight as 00:00 -> 12:00 AM
+                                    if ($time === '24:00') {
+                                        echo '<td class="time-cell">🌙 00:00</td>';
+                                    } else {
+                                        echo '<td class="time-cell">' . $time . '</td>';
+                                    }
+                                    
+                                    foreach ($days as $day) {
+                                        $slotClasses = getClassesForSlot($classes, $day, $time);
+                                        
+                                        echo '<td class="day-column">';
+                                        
+                                        if (count($slotClasses) > 0) {
+                                            echo '<div class="classes-container">';
+                                            foreach ($slotClasses as $classInfo) {
+                                                echo '<div class="class-block" style="background: ' . $classInfo['color'] . ';">';
+                                                echo '<div class="class-block-content">';
+                                                echo '<div class="class-block-title">' . htmlspecialchars($classInfo['subject']) . '</div>';
+                                                echo '<div class="class-block-time">' . $classInfo['start_time'] . ' - ' . $classInfo['end_time'] . '</div>';
+                                                echo '</div>';
+                                                echo '<button class="class-block-delete" onclick="event.stopPropagation(); deleteClass(' . $classInfo['class_id'] . ')">Delete</button>';
+                                                echo '</div>';
+                                            }
+                                            echo '</div>';
+                                        } else {
+                                            echo '<button class="add-button" onclick="event.stopPropagation(); selectSlot(\'' . $day . '\', \'' . $time . '\')">+</button>';
+                                        }
+                                        
+                                        echo '</td>';
+                                    }
+                                    
+                                    echo '</tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
                     </div>
-                    <?php $delay++; ?>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <div class="empty-title">No Classes Added Yet</div>
-                    <div class="empty-text">Start by adding your first subject with class schedule information</div>
+
+                    <!-- Note -->
+                    <div class="calendar-note">
+                        <strong>Note:</strong> Fixed classes are time blocks that AI will respect and not plot study sessions. You can add multiple subjects in the same time slot! 
+                        <?php 
+                            if ($hasEveningClasses && $maxEndTime >= '23:00') {
+                                echo '<strong>⭐ You have late night classes! Grid extends up to midnight (00:00).</strong>';
+                            } elseif ($hasEveningClasses) {
+                                echo '<strong>⭐ You have evening classes after 6:00 PM!</strong>';
+                            }
+                        ?>
+                    </div>
                 </div>
-            <?php endif; ?>
 
-            <!-- Add Subject Form -->
-            <div class="add-subject-card">
-                <div class="form-section-title">Add New Subject</div>
+                <!-- Add Class Panel -->
+                <div class="add-class-card">
+                    <div class="panel-title"> Add Class</div>
 
-                <form method="POST" action="class_timetable.php" novalidate>
-                    <input type="hidden" name="action" value="add_subject">
+                    <form method="POST" action="class_timetable.php" id="addClassForm">
+                        <input type="hidden" name="action" value="add_class">
 
-                    <!-- Subject Name -->
-                    <div class="form-group">
-                        <label for="subject">Subject Name</label>
-                        <input 
-                            type="text" 
-                            id="subject" 
-                            name="subject" 
-                            placeholder="e.g., Mathematics, Physics, English" 
-                            required
-                        >
-                    </div>
-
-                    <!-- Lecture Class Section -->
-                    <div class="form-group">
-                        <label style="font-size: 14px; text-transform: none;">🎓 Lecture Class</label>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="lecture_start">Start Time</label>
-                            <input type="time" id="lecture_start" name="lecture_start">
+                        <!-- Class Name -->
+                        <div class="form-group">
+                            <label for="subject">Class Name</label>
+                            <input 
+                                type="text" 
+                                id="subject" 
+                                name="subject" 
+                                placeholder="e.g., Physics, Mathematics" 
+                                required
+                            >
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="lecture_end">End Time</label>
-                            <input type="time" id="lecture_end" name="lecture_end">
+
+                        <!-- Time Inputs -->
+                        <div class="form-group">
+                            <label>Time</label>
+                            <div class="time-input-group">
+                                <div>
+                                    <label style="font-size: 11px; text-transform: none; color: #999;">Start Time</label>
+                                    <input type="time" id="start_time" name="start_time" required>
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; text-transform: none; color: #999;">End Time</label>
+                                    <input type="time" id="end_time" name="end_time" required>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="lecture_day">Day</label>
-                            <select id="lecture_day" name="lecture_day">
-                                <option value="">Select Day</option>
+
+                        <!-- Day Selection -->
+                        <div class="form-group">
+                            <label for="day">Select Day</label>
+                            <select id="day" name="day" required>
+                                <option value="">Choose a day</option>
                                 <option value="Monday">Monday</option>
                                 <option value="Tuesday">Tuesday</option>
                                 <option value="Wednesday">Wednesday</option>
                                 <option value="Thursday">Thursday</option>
                                 <option value="Friday">Friday</option>
                                 <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Tutorial Class Section -->
-                    <div class="form-group">
-                        <label style="font-size: 14px; text-transform: none;">👥 Tutorial Class</label>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="tutorial_start">Start Time</label>
-                            <input type="time" id="tutorial_start" name="tutorial_start">
+                        <!-- Color Picker -->
+                        <div class="form-group">
+                            <label>Color</label>
+                            <div class="color-picker">
+                                <div class="color-option selected" style="background: #90EE90;" onclick="selectColor(this, '#90EE90')"></div>
+                                <div class="color-option" style="background: #87CEEB;" onclick="selectColor(this, '#87CEEB')"></div>
+                                <div class="color-option" style="background: #FFB6C1;" onclick="selectColor(this, '#FFB6C1')"></div>
+                                <div class="color-option" style="background: #FFD700;" onclick="selectColor(this, '#FFD700')"></div>
+                                <div class="color-option" style="background: #FFA500;" onclick="selectColor(this, '#FFA500')"></div>
+                                <div class="color-option" style="background: #DDA0DD;" onclick="selectColor(this, '#DDA0DD')"></div>
+                            </div>
+                            <input type="hidden" id="color" name="color" value="#90EE90">
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="tutorial_end">End Time</label>
-                            <input type="time" id="tutorial_end" name="tutorial_end">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="tutorial_day">Day</label>
-                            <select id="tutorial_day" name="tutorial_day">
-                                <option value="">Select Day</option>
-                                <option value="Monday">Monday</option>
-                                <option value="Tuesday">Tuesday</option>
-                                <option value="Wednesday">Wednesday</option>
-                                <option value="Thursday">Thursday</option>
-                                <option value="Friday">Friday</option>
-                                <option value="Saturday">Saturday</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Add Subject</button>
-                    </div>
-                </form>
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-primary"> Add To Timetable</button>
+                        <a href="personal_study_plan.php" class="btn-secondary">Continue ➜</a>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function editClass(classId) {
-            // Enable inputs
-            const startTimeInput = document.querySelector('.start-time-' + classId);
-            const endTimeInput = document.querySelector('.end-time-' + classId);
-            const daySelect = document.querySelector('.day-' + classId);
-            
-            startTimeInput.disabled = false;
-            endTimeInput.disabled = false;
-            daySelect.disabled = false;
-            
-            // Update hidden inputs
-            document.getElementById('start-time-input-' + classId).value = startTimeInput.value;
-            document.getElementById('end-time-input-' + classId).value = endTimeInput.value;
-            document.getElementById('day-input-' + classId).value = daySelect.value;
-            
-            // Add event listeners to update hidden inputs
-            startTimeInput.addEventListener('change', function() {
-                document.getElementById('start-time-input-' + classId).value = this.value;
+        // Study Menu Toggle
+        const studyMenu = document.getElementById('studyMenu');
+        studyMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            const submenu = this.nextElementSibling;
+            submenu.classList.toggle('open');
+            this.classList.toggle('expand-open');
+        });
+
+        // Select Color
+        function selectColor(element, color) {
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('selected');
             });
-            endTimeInput.addEventListener('change', function() {
-                document.getElementById('end-time-input-' + classId).value = this.value;
-            });
-            daySelect.addEventListener('change', function() {
-                document.getElementById('day-input-' + classId).value = this.value;
-            });
-            
-            // Hide edit button and show save/cancel buttons
-            document.getElementById('edit-btn-' + classId).style.display = 'none';
-            document.getElementById('actions-' + classId).style.display = 'flex';
-            
-            // Highlight the entry
-            document.getElementById('class-' + classId).classList.add('edit-mode');
-            
-            // Focus on first input
-            startTimeInput.focus();
+            element.classList.add('selected');
+            document.getElementById('color').value = color;
         }
 
-        function cancelEdit(classId) {
-            const startTimeInput = document.querySelector('.start-time-' + classId);
-            const endTimeInput = document.querySelector('.end-time-' + classId);
-            const daySelect = document.querySelector('.day-' + classId);
+        // Select Time Slot
+        function selectSlot(day, time) {
+            document.getElementById('day').value = day;
+            document.getElementById('start_time').value = time === '24:00' ? '00:00' : time;
             
-            startTimeInput.disabled = true;
-            endTimeInput.disabled = true;
-            daySelect.disabled = true;
+            const hours = time === '24:00' ? 1 : parseInt(time.split(':')[0]) + 1;
+            const endHour = Math.min(hours, 24).toString().padStart(2, '0');
+            document.getElementById('end_time').value = endHour + ':00';
             
-            document.getElementById('edit-btn-' + classId).style.display = 'flex';
-            document.getElementById('actions-' + classId).style.display = 'none';
-            document.getElementById('class-' + classId).classList.remove('edit-mode');
+            document.getElementById('subject').focus();
+            document.querySelector('.add-class-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+
+        // Delete Class
+        function deleteClass(classId) {
+            if (confirm('Are you sure you want to delete this class?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'class_timetable.php';
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'delete_class';
+                form.appendChild(actionInput);
+                
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'class_id';
+                idInput.value = classId;
+                form.appendChild(idInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Form Validation
+        document.getElementById('addClassForm').addEventListener('submit', function(e) {
+            const subject = document.getElementById('subject').value.trim();
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+            const day = document.getElementById('day').value;
+
+            if (!subject) {
+                e.preventDefault();
+                alert('Please enter a class name!');
+                return;
+            }
+
+            if (!startTime || !endTime || !day) {
+                e.preventDefault();
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            if (startTime >= endTime) {
+                e.preventDefault();
+                alert('End time must be after start time!');
+                return;
+            }
+        });
     </script>
 </body>
 </html>

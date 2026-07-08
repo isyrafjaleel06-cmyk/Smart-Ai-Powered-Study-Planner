@@ -417,12 +417,12 @@ $conn->close();
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        /* Slider */
+        /* Slider Track Custom Logic Color Filling Variable */
         .slider {
             width: 100%;
             height: 6px;
             border-radius: 3px;
-            background: linear-gradient(90deg, #667eea 0%, #667eea var(--value), #e0e0e0 var(--value), #e0e0e0 100%);
+            background: linear-gradient(90deg, #667eea 0%, #667eea var(--value, 50%), #e0e0e0 var(--value, 50%), #e0e0e0 100%);
             outline: none;
             -webkit-appearance: none;
             appearance: none;
@@ -585,12 +585,8 @@ $conn->close();
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
@@ -765,7 +761,6 @@ $conn->close();
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="logo">Smart AI-Powered Study Planner</div>
         <a href="manage_profile.php" class="user-profile">
@@ -774,9 +769,7 @@ $conn->close();
         </a>
     </div>
 
-    <!-- Main Container -->
     <div class="main-container">
-        <!-- Sidebar -->
         <div class="sidebar">
             <a href="dashboard.php" class="sidebar-item">Dashboard</a>
             <a href="#" class="sidebar-item" id="studyMenu"> Study</a>
@@ -786,12 +779,10 @@ $conn->close();
             </div>
             <a href="timetable.php" class="sidebar-item">Timetable</a>
             <a href="progress.php" class="sidebar-item">Progress</a>
-            <a href="manage_profile.php" class="sidebar-item">⚙️ Manage Profile</a>
+            <a href="manage_profile.php" class="sidebar-item">Manage Profile</a>
         </div>
 
-        <!-- Content -->
         <div class="content">
-            <!-- Page Header -->
             <div class="page-header">
                 <h1 class="page-title">Personal Study Plan</h1>
                 <p class="page-subtitle">Manage your subjects and confidence levels</p>
@@ -805,7 +796,6 @@ $conn->close();
                 <div class="alert alert-success"> <?php echo htmlspecialchars($success); ?></div>
             <?php endif; ?>
 
-            <!-- Subject & Priority -->
             <div class="card">
                 <div class="card-title"> Subject & Priority</div>
                 
@@ -826,11 +816,11 @@ $conn->close();
                                 <div class="subject-header">
                                     <div class="subject-name"><?php echo htmlspecialchars($subject['subject']); ?></div>
                                     <div class="subject-actions">
-                                        <button type="button" class="btn-small btn-edit" onclick="editSubject(<?php echo $subject['plan_id']; ?>, '<?php echo htmlspecialchars($subject['subject']); ?>', <?php echo $subject['confidence_level']; ?>)">✏️ Edit</button>
+                                        <button type="button" class="btn-small btn-edit" onclick="editSubject(<?php echo $subject['plan_id']; ?>, '<?php echo htmlspecialchars($subject['subject'], ENT_QUOTES); ?>', <?php echo $subject['confidence_level']; ?>)">Edit</button>
                                         <form method="POST" action="personal_study_plan.php" style="display: inline;">
                                             <input type="hidden" name="action" value="delete_subject">
                                             <input type="hidden" name="plan_id" value="<?php echo $subject['plan_id']; ?>">
-                                            <button type="submit" class="btn-small btn-delete" onclick="return confirm('Delete this subject?')">🗑️ Delete</button>
+                                            <button type="submit" class="btn-small btn-delete" onclick="return confirm('Delete this subject?')">Delete</button>
                                         </form>
                                     </div>
                                 </div>
@@ -850,14 +840,12 @@ $conn->close();
                 </div>
             </div>
 
-            <!-- Info Note -->
             <div class="info-note">
                  <strong>Tip:</strong> Your study preferences (wake-up time, sleep time, preferred study time) can be configured in <strong>Manage Profile</strong> settings!
             </div>
         </div>
     </div>
 
-    <!-- Edit Subject Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-title">
@@ -887,16 +875,18 @@ $conn->close();
     </div>
 
     <script>
-        // Update new confidence level
+        // Update new confidence level fill track line background
         function updateNewConfidence() {
             const slider = document.getElementById('newConfidence');
             document.getElementById('newConfidenceValue').textContent = slider.value;
+            slider.style.setProperty('--value', slider.value + '%');
         }
 
-        // Update edit confidence level
+        // Update edit confidence level fill track line background
         function updateEditConfidence() {
             const slider = document.getElementById('editConfidence');
             document.getElementById('editConfidenceValue').textContent = slider.value;
+            slider.style.setProperty('--value', slider.value + '%');
         }
 
         // Add subject
@@ -939,8 +929,12 @@ $conn->close();
         function editSubject(planId, subject, confidence) {
             document.getElementById('editPlanId').value = planId;
             document.getElementById('editSubject').value = subject;
-            document.getElementById('editConfidence').value = confidence;
+            
+            const editSlider = document.getElementById('editConfidence');
+            editSlider.value = confidence;
             document.getElementById('editConfidenceValue').textContent = confidence;
+            editSlider.style.setProperty('--value', confidence + '%');
+            
             document.getElementById('editModal').style.display = 'block';
         }
 
@@ -966,6 +960,11 @@ $conn->close();
                 submenu.classList.toggle('open');
             });
         }
+
+        // Color track setup initialized right on document ready state context
+        window.addEventListener('DOMContentLoaded', () => {
+            updateNewConfidence();
+        });
     </script>
 </body>
 </html>

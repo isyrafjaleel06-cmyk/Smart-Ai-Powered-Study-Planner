@@ -716,7 +716,7 @@ $today = date('l');
         <div class="timetable-card">
             <?php if (empty($timetableData)): ?>
                 <div class="empty-state">
-                    <div class="empty-state-icon">🗓️</div>
+                    <div class="empty-state-icon"></div>
                     <div class="empty-state-title">No Study Plan Yet</div>
                     <div class="empty-state-text">
                         Click <strong>"✨ Generate AI Study Plan"</strong> above to create your personalised weekly schedule.<br><br>

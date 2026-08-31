@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 if (!isset($_SESSION['student_id'])) {
     header("Location: login.php");
@@ -228,16 +228,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate'])) {
             }
         }
     }
-}
-
-// Mark session as completed
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_complete'])) {
-    $timetable_id = (int)$_POST['timetable_id'];
-    $markQ = $conn->prepare("UPDATE ai_personal_study_timetable SET is_completed = 1 WHERE timetable_id = ? AND student_id = ?");
-    $markQ->bind_param("ii", $timetable_id, $student_id);
-    $markQ->execute();
-    $markQ->close();
-    $success = 'Session marked as completed!';
 }
 
 // ─────────────────────────────────────────────
@@ -486,7 +476,7 @@ $today = date('l');
 
         .week-table th {
             padding: 14px 10px; text-align: center;
-            font-size: 13px; font-weight: 700; color: white;
+            font-size: 15px; font-weight: 700; color: white;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
@@ -537,13 +527,13 @@ $today = date('l');
         .session-block.completed    { background: rgba(107,114,128,0.1); border-color: #9ca3af; opacity: 0.7; }
 
         .session-subject {
-            font-size: 12px; font-weight: 700; color: #333;
+            font-size: 14px; font-weight: 700; color: #333;
             margin-bottom: 4px; line-height: 1.3;
         }
         .session-block.completed .session-subject { text-decoration: line-through; color: #999; }
 
         .session-time {
-            font-size: 10px; color: #777; font-weight: 500; margin-bottom: 6px;
+            font-size: 12px; color: #777; font-weight: 500; margin-bottom: 6px;
         }
 
         .session-badge {
@@ -555,17 +545,6 @@ $today = date('l');
         .badge-intermediate { background: #f59e0b; }
         .badge-mastered     { background: #10b981; }
         .badge-completed    { background: #9ca3af; }
-
-        .btn-complete {
-            width: 100%; padding: 5px;
-            background: rgba(102,126,234,0.15);
-            border: 1px solid rgba(102,126,234,0.3);
-            border-radius: 6px; color: #667eea;
-            font-size: 10px; font-weight: 700;
-            cursor: pointer; transition: all 0.2s ease;
-            text-transform: uppercase; letter-spacing: 0.3px;
-        }
-        .btn-complete:hover { background: #667eea; color: white; }
 
         /* ── Empty State ── */
         .empty-state {
@@ -618,7 +597,7 @@ $today = date('l');
 
 <!-- Header -->
 <div class="header">
-    <div class="logo">📚 Smart AI-Powered Study Planner</div>
+    <div class="logo">Smart AI-Powered Study Planner</div>
     <a href="manage_profile.php" class="user-profile">
         <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
         <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
@@ -636,7 +615,7 @@ $today = date('l');
             <a href="class_timetable.php"   class="sidebar-item">Class Timetable</a>
             <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
         </div>
-        <a href="timetable.php"        class="sidebar-item active">Timetable</a>
+        <a href="timetable.php"        class="sidebar-item active">AI Timetable</a>
         <a href="progress.php"         class="sidebar-item">Progress</a>
         <a href="manage_profile.php"   class="sidebar-item">Manage Profile</a>
     </div>
@@ -647,7 +626,7 @@ $today = date('l');
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">AI Study Timetable</h1>
+                <h1 class="page-title">AI Study Plan Timetable</h1>
                 <p class="page-subtitle">
                     Week of <?php echo date('d M', strtotime('monday this week')); ?> –
                     <?php echo date('d M Y', strtotime('sunday this week')); ?>
@@ -694,7 +673,7 @@ $today = date('l');
             </div>
             <div class="stat-mini">
                 <div class="stat-mini-value"><?php echo $completedSessions; ?></div>
-                <div class="stat-mini-label">Completed</div>
+                <div class="stat-mini-label">Completed Sessions</div>
             </div>
             <div class="stat-mini">
                 <div class="stat-mini-value"><?php echo $completionPct; ?>%</div>
@@ -705,7 +684,7 @@ $today = date('l');
 
         <!-- Legend -->
         <div class="legend">
-            <span class="legend-title">Legend:</span>
+            <span class="legend-title">Notes:</span>
             <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> Critical (0–30%)</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div> Intermediate (31–70%)</div>
             <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div> Mastered (71–100%)</div>
@@ -719,7 +698,7 @@ $today = date('l');
                     <div class="empty-state-icon"></div>
                     <div class="empty-state-title">No Study Plan Yet</div>
                     <div class="empty-state-text">
-                        Click <strong>"✨ Generate AI Study Plan"</strong> above to create your personalised weekly schedule.<br><br>
+                        Click <strong>"Generate AI Study Plan"</strong> above to create your personalised weekly schedule.<br><br>
                         Make sure you have set up your <strong>Profile</strong>, added <strong>Class Timetable</strong> and at least one <strong>Subject</strong> in Personal Plan first.
                     </div>
                 </div>
@@ -731,7 +710,7 @@ $today = date('l');
                                 <th class="<?php echo $day === $today ? 'today-header' : ''; ?>">
                                     <?php echo substr($day, 0, 3); ?>
                                     <br>
-                                    <span style="font-size:10px; font-weight:500; opacity:0.85;">
+                                    <span style="font-size:12px; font-weight:500; opacity:0.85;">
                                         <?php echo date('d/m', strtotime("$weekStart +" . (array_search($day, $days)) . " days")); ?>
                                     </span>
                                 </th>
@@ -766,13 +745,6 @@ $today = date('l');
                                                      <?php echo $startFmt; ?> – <?php echo $endFmt; ?><br>
                                                      <?php echo $dur; ?> min
                                                 </div>
-                                                <?php if (!$session['is_completed']): ?>
-                                                    <form method="POST" action="timetable.php">
-                                                        <input type="hidden" name="mark_complete" value="1">
-                                                        <input type="hidden" name="timetable_id" value="<?php echo $session['timetable_id']; ?>">
-                                                        <button type="submit" class="btn-complete">✓ Mark Done</button>
-                                                    </form>
-                                                <?php endif; ?>
                                             </div>
                                         <?php endforeach; ?>
                                     <?php else: ?>

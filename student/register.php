@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 $error = '';
 $success = '';
@@ -94,15 +94,12 @@ $conn->close();
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
             background-size: 50px 50px;
             animation: moveBackground 20s linear infinite;
-            z-index: 0;
-            pointer-events: none;
+            z-index: 0; pointer-events: none;
         }
 
         @keyframes moveBackground {
@@ -117,6 +114,7 @@ $conn->close();
             max-width: 450px;
         }
 
+        /* ── Container with scrollbar on far right ── */
         .container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -128,44 +126,69 @@ $conn->close();
             animation: slideUp 0.6s ease-out;
             max-height: calc(100vh - 40px);
             overflow-y: auto;
+
+            /* Pull scrollbar to the very outer edge */
             scrollbar-width: thin;
             scrollbar-color: #667eea #f0f0f0;
+            border-radius: 20px;
+
+            /* Give room so scrollbar sits outside padding */
+            padding-right: 44px;
         }
 
-        .container::-webkit-scrollbar { width: 8px; }
-        .container::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
-        .container::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
-        .container::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+        /* Chrome/Edge/Safari — place thumb at outer right */
+        .container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .container::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 0 20px 20px 0;
+        }
+        .container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+        .container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
+        /* ── Icon — matches login.php ── */
         .icon-container {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .icon {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto;
-            font-size: 32px;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.45);
+            transition: transform 0.3s ease;
         }
 
+        .icon:hover { transform: scale(1.05) rotate(-3deg); }
+
+        .icon i {
+            color: white;
+            font-size: 30px;
+        }
+
+        /* ── Title ── */
         .title {
             text-align: center;
             font-size: 28px;
             font-weight: 700;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 8px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -180,17 +203,22 @@ $conn->close();
             letter-spacing: 0.5px;
         }
 
+        /* ── Alerts ── */
         .alert {
             padding: 12px 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             animation: slideUp 0.4s ease-out;
         }
 
         .alert-error   { background-color: #fee; color: #c33; border-left: 4px solid #c33; }
         .alert-success { background-color: #efe; color: #3c3; border-left: 4px solid #3c3; }
 
+        /* ── Form groups ── */
         .form-group {
             margin-bottom: 20px;
             animation: fadeIn 0.6s ease-out forwards;
@@ -206,12 +234,12 @@ $conn->close();
 
         label {
             display: block;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             margin-bottom: 8px;
-            color: #333;
+            color: #888;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
         }
 
         .password-field-wrapper {
@@ -232,11 +260,7 @@ $conn->close();
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        input[type="password"],
-        input[type="text"].password-input {
-            padding-right: 48px;
-        }
-
+        input[type="password"] { padding-right: 48px; }
         input::placeholder { color: #bbb; }
 
         input:focus {
@@ -247,26 +271,25 @@ $conn->close();
             transform: translateY(-2px);
         }
 
+        /* ── Eye toggle ── */
         .password-toggle {
             position: absolute;
             right: 12px;
             background: none;
             border: none;
             cursor: pointer;
-            color: #667eea;
+            color: #aaa;
+            font-size: 15px;
             transition: all 0.3s ease;
             padding: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
         }
 
-        .password-toggle:hover {
-            color: #764ba2;
-            transform: scale(1.2);
-        }
+        .password-toggle:hover { color: #667eea; transform: scale(1.15); }
 
+        /* ── Password requirements ── */
         .password-requirements {
             font-size: 12px;
             color: #666;
@@ -291,78 +314,79 @@ $conn->close();
         .requirement.met   { color: #3c3; }
         .requirement.unmet { color: #c33; }
 
+        /* ── Sign up button ── */
         .signup-button {
             width: 100%;
             padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             color: white;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 25px;
+            margin-top: 20px;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            letter-spacing: 0.4px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
             animation: slideUp 0.6s ease-out 0.5s forwards;
             opacity: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .signup-button:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 14px 30px rgba(102, 126, 234, 0.5);
         }
 
         .signup-button:active:not(:disabled) { transform: translateY(-1px); }
         .signup-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
+        /* ── Divider ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0 0;
+            opacity: 0;
+            animation: slideUp 0.6s ease-out 0.55s forwards;
+        }
+
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #e8e8e8;
+        }
+
+        .divider span {
+            font-size: 12px;
+            color: #bbb;
+            white-space: nowrap;
+        }
+
+        /* ── Login link ── */
         .login-link {
-            margin-top: 20px;
+            margin-top: 16px;
             text-align: center;
             font-size: 14px;
+            color: #999;
             animation: slideUp 0.6s ease-out 0.6s forwards;
             opacity: 0;
         }
-
-        .login-link span { color: #999; }
 
         .login-link a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: color 0.2s ease;
         }
 
         .login-link a:hover { color: #764ba2; text-decoration: underline; }
 
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 25px 0;
-            opacity: 0;
-            animation: slideUp 0.6s ease-out 0.45s forwards;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #e0e0e0;
-        }
-
-        .divider-text {
-            padding: 0 12px;
-            color: #999;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
+        /* ── Responsive ── */
         @media (max-width: 480px) {
-            .container { padding: 30px; max-height: calc(100vh - 20px); }
+            .container { padding: 30px 34px 30px 30px; max-height: calc(100vh - 20px); }
             .title { font-size: 24px; }
             input { padding: 12px 14px; }
             body { padding: 10px; }
@@ -372,8 +396,12 @@ $conn->close();
 <body>
     <div class="wrapper">
         <div class="container">
+
+            <!-- Icon — matches login.php -->
             <div class="icon-container">
-                <div class="icon">📚</div>
+                <div class="icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
             </div>
 
             <h1 class="title">Sign Up</h1>
@@ -381,13 +409,15 @@ $conn->close();
 
             <?php if ($error): ?>
                 <div class="alert alert-error">
-                    <strong>Error:</strong> <?php echo htmlspecialchars($error); ?>
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($success): ?>
                 <div class="alert alert-success">
-                    <strong>Success:</strong> <?php echo htmlspecialchars($success); ?>
+                    <i class="fa-solid fa-circle-check"></i>
+                    <?php echo htmlspecialchars($success); ?>
                 </div>
             <?php endif; ?>
 
@@ -454,22 +484,23 @@ $conn->close();
                     </div>
                 </div>
 
-                <button type="submit" class="signup-button" id="submitBtn">Sign Up Now</button>
+                <button type="submit" class="signup-button" id="submitBtn">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Sign Up Now
+                </button>
             </form>
 
-            <div class="divider">
-                <span class="divider-text">Or</span>
-            </div>
+            <div class="divider"><span>or</span></div>
 
             <div class="login-link">
-                <span>Already have an account? </span>
-                <a href="login.php">Sign In Here</a>
+                Already have an account? <a href="login.php">Sign In Here</a>
             </div>
+
         </div>
     </div>
 
     <script>
-        // Password visibility toggle
+        // Password toggle
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput  = document.getElementById('password');
 
@@ -480,7 +511,7 @@ $conn->close();
             this.querySelector('i').className = type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
         });
 
-        // Confirm password visibility toggle
+        // Confirm password toggle
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
         const confirmPasswordInput  = document.getElementById('confirm_password');
 
@@ -491,7 +522,7 @@ $conn->close();
             this.querySelector('i').className = type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
         });
 
-        // Real-time validation
+        // Validation
         const form            = document.getElementById('registerForm');
         const username        = document.getElementById('username');
         const email           = document.getElementById('email');
@@ -509,19 +540,15 @@ $conn->close();
             this.style.borderColor = !emailRegex.test(this.value) ? '#ff6b6b' : '#e0e0e0';
         });
 
-        password.addEventListener('focus', function() {
-            passwordReqs.classList.add('show');
-        });
+        password.addEventListener('focus', function() { passwordReqs.classList.add('show'); });
 
         password.addEventListener('input', function() {
             const length    = this.value.length >= 6;
             const uppercase = /[A-Z]/.test(this.value);
             const number    = /[0-9]/.test(this.value);
-
             updateRequirement('req-length',    length);
             updateRequirement('req-uppercase', uppercase);
             updateRequirement('req-number',    number);
-
             this.style.borderColor = (length && uppercase && number) ? '#e0e0e0' : '#ff6b6b';
         });
 
@@ -530,11 +557,7 @@ $conn->close();
         });
 
         confirmPassword.addEventListener('input', function() {
-            if (this.value !== password.value) {
-                this.style.borderColor = '#ff6b6b';
-            } else if (this.value.length > 0) {
-                this.style.borderColor = '#e0e0e0';
-            }
+            this.style.borderColor = this.value !== password.value ? '#ff6b6b' : '#e0e0e0';
         });
 
         function updateRequirement(id, met) {
@@ -545,7 +568,6 @@ $conn->close();
 
         form.addEventListener('submit', function(e) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
             if (username.value.length < 3) {
                 e.preventDefault(); alert('Username must be at least 3 characters long!'); username.focus();
             } else if (!emailRegex.test(email.value)) {
@@ -555,8 +577,8 @@ $conn->close();
             } else if (password.value !== confirmPassword.value) {
                 e.preventDefault(); alert('Passwords do not match!'); confirmPassword.focus();
             } else {
-                submitBtn.disabled    = true;
-                submitBtn.textContent = 'Registering...';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering...';
             }
         });
     </script>

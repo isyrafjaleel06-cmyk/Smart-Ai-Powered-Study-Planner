@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 $error = '';
 
@@ -63,15 +63,12 @@ $conn->close();
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
             background-size: 50px 50px;
             animation: moveBackground 20s linear infinite;
-            z-index: 0;
-            pointer-events: none;
+            z-index: 0; pointer-events: none;
         }
 
         @keyframes moveBackground {
@@ -97,23 +94,33 @@ $conn->close();
             to   { opacity: 1; transform: translateY(0); }
         }
 
+        /* ── Icon ── */
         .icon {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 30px;
-            font-size: 32px;
+            margin: 0 auto 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.45);
+            transition: transform 0.3s ease;
         }
 
+        .icon:hover { transform: scale(1.05) rotate(-3deg); }
+
+        .icon i {
+            color: white;
+            font-size: 30px;
+        }
+
+        /* ── Title ── */
         .title {
             text-align: center;
             font-size: 28px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -124,9 +131,10 @@ $conn->close();
             text-align: center;
             font-size: 13px;
             color: #999;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
+        /* ── Alert ── */
         .alert {
             padding: 12px 15px;
             border-radius: 8px;
@@ -135,18 +143,22 @@ $conn->close();
             background-color: #fee;
             color: #c33;
             border-left: 4px solid #c33;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        /* ── Form ── */
+        .form-group { margin-bottom: 20px; }
 
         label {
             display: block;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             margin-bottom: 8px;
-            color: #333;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
         }
 
         .password-field-wrapper {
@@ -162,13 +174,14 @@ $conn->close();
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             background-color: #f8f9fa;
+            color: #333;
             transition: all 0.3s ease;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        input[type="password"] {
-            padding-right: 48px;
-        }
+        input[type="password"] { padding-right: 48px; }
+
+        input::placeholder { color: #bbb; }
 
         input:focus {
             outline: none;
@@ -177,6 +190,7 @@ $conn->close();
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        /* ── Eye toggle ── */
         .password-toggle {
             position: absolute;
             right: 12px;
@@ -184,7 +198,7 @@ $conn->close();
             border: none;
             cursor: pointer;
             font-size: 15px;
-            color: #667eea;
+            color: #aaa;
             transition: all 0.3s ease;
             padding: 5px;
             display: flex;
@@ -192,45 +206,62 @@ $conn->close();
             justify-content: center;
         }
 
-        .password-toggle:hover {
-            color: #764ba2;
-            transform: scale(1.2);
-        }
+        .password-toggle:hover { color: #667eea; transform: scale(1.15); }
 
+        /* ── Login Button ── */
         .login-button {
             width: 100%;
             padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             color: white;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 25px;
+            margin-top: 10px;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            letter-spacing: 0.4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .login-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 14px 30px rgba(102, 126, 234, 0.5);
         }
 
+        /* ── Sign up link ── */
         .signup-link {
-            margin-top: 20px;
+            margin-top: 22px;
             text-align: center;
             font-size: 14px;
+            color: #999;
         }
 
         .signup-link a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
+            transition: color 0.2s ease;
         }
 
-        .signup-link a:hover { text-decoration: underline; }
+        .signup-link a:hover { color: #764ba2; text-decoration: underline; }
 
+        /* ── Divider ── */
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 22px 0 0;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #e8e8e8;
+        }
+        .divider span { font-size: 12px; color: #bbb; white-space: nowrap; }
+
+        /* ── Responsive ── */
         @media (max-width: 480px) {
             .container { padding: 30px; }
             .title { font-size: 24px; }
@@ -240,17 +271,26 @@ $conn->close();
 </head>
 <body>
     <div class="container">
-        <div class="icon">📚</div>
+
+        <!-- Icon -->
+        <div class="icon">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+
         <h1 class="title">Sign In</h1>
-        <p class="subtitle">Welcome Back to Smart AI-Powered Study Planner</p>
+        <p class="subtitle">Welcome back to Smart AI-Powered Study Planner</p>
 
         <?php if ($error): ?>
-            <div class="alert"><?php echo htmlspecialchars($error); ?></div>
+            <div class="alert">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <?php echo htmlspecialchars($error); ?>
+            </div>
         <?php endif; ?>
 
         <form method="POST" action="login.php">
+
             <div class="form-group">
-                <label for="username">USERNAME</label>
+                <label for="username">Username</label>
                 <input
                     type="text"
                     id="username"
@@ -261,7 +301,7 @@ $conn->close();
             </div>
 
             <div class="form-group">
-                <label for="password">PASSWORD</label>
+                <label for="password">Password</label>
                 <div class="password-field-wrapper">
                     <input
                         type="password"
@@ -276,12 +316,18 @@ $conn->close();
                 </div>
             </div>
 
-            <button type="submit" class="login-button">Sign In</button>
+            <button type="submit" class="login-button">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Sign In
+            </button>
         </form>
 
+        <div class="divider"><span>or</span></div>
+
         <div class="signup-link">
-            <span>Don't have an account? <a href="register.php">Sign Up Here</a></span>
+            Don't have an account? <a href="register.php">Sign Up Here</a>
         </div>
+
     </div>
 
     <script>

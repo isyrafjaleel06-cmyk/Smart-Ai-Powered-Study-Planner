@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['student_id'])) {
@@ -368,6 +368,9 @@ $times = generateTimeSlots($maxEndTime);
                         0 0 40px rgba(102, 126, 234, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: slideUp 0.6s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         @keyframes slideUp {
@@ -392,6 +395,49 @@ $times = generateTimeSlots($maxEndTime);
             font-size: 14px;
             color: #999;
             font-weight: 500;
+        }
+
+        /* Navigation Buttons in Page Header */
+        .header-nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-nav-prev {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-nav-prev:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-nav-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-nav-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         .alert {
@@ -421,8 +467,8 @@ $times = generateTimeSlots($maxEndTime);
 
         .alert-success {
             background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%);
-            color: #388e3c;
-            border-left: 4px solid #388e3c;
+            color: rgb(39, 199, 47);
+            border-left: 4px solid rgb(40, 192, 48);
         }
 
         /* Content Wrapper */
@@ -454,11 +500,6 @@ $times = generateTimeSlots($maxEndTime);
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .card-title::before {
-            content: '';
-            font-size: 24px;
         }
 
         /* Calendar Grid */
@@ -584,10 +625,10 @@ $times = generateTimeSlots($maxEndTime);
 
         .class-block {
             width: 100%;
-            padding: 6px;
+            padding: 21px;
             border-radius: 4px;
             color: white;
-            font-size: 10px;
+            font-size: 19px;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
@@ -597,7 +638,7 @@ $times = generateTimeSlots($maxEndTime);
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 35px;
+            min-height: 40px;
             flex-shrink: 0;
         }
 
@@ -619,7 +660,7 @@ $times = generateTimeSlots($maxEndTime);
         }
 
         .class-block-time {
-            font-size: 8px;
+            font-size: 11px;
             opacity: 0.9;
             margin-bottom: 3px;
             white-space: nowrap;
@@ -634,7 +675,7 @@ $times = generateTimeSlots($maxEndTime);
             padding: 2px 6px;
             border-radius: 3px;
             cursor: pointer;
-            font-size: 8px;
+            font-size: 10px;
             font-weight: 700;
             transition: all 0.3s ease;
             text-transform: uppercase;
@@ -667,32 +708,6 @@ $times = generateTimeSlots($maxEndTime);
         .add-button:hover {
             background: rgba(102, 126, 234, 0.3);
             transform: scale(1.1);
-        }
-
-        /* Time Period Badges */
-        .time-period-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .badge-morning {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            color: white;
-        }
-
-        .badge-evening {
-            background: linear-gradient(135deg, #3F51B5 0%, #1A237E 100%);
-            color: white;
-        }
-
-        .badge-night {
-            background: linear-gradient(135deg, #424242 0%, #000000 100%);
-            color: white;
         }
 
         /* Calendar Note */
@@ -731,11 +746,6 @@ $times = generateTimeSlots($maxEndTime);
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .panel-title::before {
-            content: '';
-            font-size: 20px;
         }
 
         .form-group {
@@ -846,29 +856,6 @@ $times = generateTimeSlots($maxEndTime);
             box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
         }
 
-        .btn-secondary {
-            width: 100%;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #667eea;
-            background: white;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -919,6 +906,9 @@ $times = generateTimeSlots($maxEndTime);
 
             .page-header {
                 padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
 
             .page-title {
@@ -948,7 +938,6 @@ $times = generateTimeSlots($maxEndTime);
                 <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
                 <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
             </a>
-           
         </div>
     </div>
 
@@ -956,13 +945,13 @@ $times = generateTimeSlots($maxEndTime);
     <div class="main-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <a href="dashboard.php" class="sidebar-item"> Dashboard</a>
+            <a href="dashboard.php" class="sidebar-item">Dashboard</a>
             <a href="#" class="sidebar-item" id="studyMenu">Study</a>
             <div class="sidebar-submenu">
                 <a href="class_timetable.php" class="sidebar-item active">Class Timetable</a>
                 <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
             </div>
-            <a href="timetable.php" class="sidebar-item">Timetable</a>
+            <a href="timetable.php" class="sidebar-item">AI Timetable</a>
             <a href="progress.php" class="sidebar-item">Progress</a>
             <a href="manage_profile.php" class="sidebar-item">Manage Profile</a>
         </div>
@@ -971,25 +960,24 @@ $times = generateTimeSlots($maxEndTime);
         <div class="content">
             <!-- Page Header -->
             <div class="page-header">
-                <h1 class="page-title">
-                     Class Timetable
-                    <?php 
-                        if ($hasEveningClasses && $maxEndTime >= '23:00') {
-                            echo '<span class="time-period-badge badge-night">🌙 Late Night (Up to Midnight)</span>';
-                        } elseif ($hasEveningClasses) {
-                            echo '<span class="time-period-badge badge-evening">🌙 Evening Classes</span>';
-                        }
-                    ?>
-                </h1>
-                <p class="page-subtitle">Manage your class schedule - Add multiple subjects in the same time slot</p>
+                <div>
+                    <h1 class="page-title">Class Timetable</h1>
+                    <p class="page-subtitle">Manage your class schedule - Add multiple subjects in the same time slot</p>
+                </div>
+                
+                <!-- Navigation Buttons placed in top-right sketch location -->
+                <div class="header-nav-buttons">
+                    <a href="manage_profile.php" class="btn-nav btn-nav-prev">Manage Profile</a>
+                    <a href="personal_study_plan.php" class="btn-nav btn-nav-next">Personal Plan</a>
+                </div>
             </div>
 
             <?php if ($error): ?>
-                <div class="alert alert-error">❌ <?php echo htmlspecialchars($error); ?></div>
+                <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
             <?php if ($success): ?>
-                <div class="alert alert-success">✅ <?php echo htmlspecialchars($success); ?></div>
+                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
             <?php endif; ?>
 
             <!-- Content Wrapper -->
@@ -1076,9 +1064,9 @@ $times = generateTimeSlots($maxEndTime);
                         <strong>Note:</strong> Fixed classes are time blocks that AI will respect and not plot study sessions. You can add multiple subjects in the same time slot! 
                         <?php 
                             if ($hasEveningClasses && $maxEndTime >= '23:00') {
-                                echo '<strong>⭐ You have late night classes! Grid extends up to midnight (00:00).</strong>';
+                                echo '<strong> You have late night classes! Grid extends up to midnight (00:00).</strong>';
                             } elseif ($hasEveningClasses) {
-                                echo '<strong>⭐ You have evening classes after 6:00 PM!</strong>';
+                                echo '<strong> You have evening classes after 6:00 PM!</strong>';
                             }
                         ?>
                     </div>
@@ -1086,7 +1074,7 @@ $times = generateTimeSlots($maxEndTime);
 
                 <!-- Add Class Panel -->
                 <div class="add-class-card">
-                    <div class="panel-title"> Add Class</div>
+                    <div class="panel-title">Add Class</div>
 
                     <form method="POST" action="class_timetable.php" id="addClassForm">
                         <input type="hidden" name="action" value="add_class">
@@ -1133,23 +1121,9 @@ $times = generateTimeSlots($maxEndTime);
                             </select>
                         </div>
 
-                        <!-- Color Picker -->
-                        <div class="form-group">
-                            <label>Color</label>
-                            <div class="color-picker">
-                                <div class="color-option selected" style="background: #90EE90;" onclick="selectColor(this, '#90EE90')"></div>
-                                <div class="color-option" style="background: #87CEEB;" onclick="selectColor(this, '#87CEEB')"></div>
-                                <div class="color-option" style="background: #FFB6C1;" onclick="selectColor(this, '#FFB6C1')"></div>
-                                <div class="color-option" style="background: #FFD700;" onclick="selectColor(this, '#FFD700')"></div>
-                                <div class="color-option" style="background: #FFA500;" onclick="selectColor(this, '#FFA500')"></div>
-                                <div class="color-option" style="background: #DDA0DD;" onclick="selectColor(this, '#DDA0DD')"></div>
-                            </div>
-                            <input type="hidden" id="color" name="color" value="#90EE90">
-                        </div>
 
                         <!-- Submit Button -->
-                        <button type="submit" class="btn-primary"> Add To Timetable</button>
-                        <a href="personal_study_plan.php" class="btn-secondary">Continue ➜</a>
+                        <button type="submit" class="btn-primary">Add To Timetable</button>
                     </form>
                 </div>
             </div>

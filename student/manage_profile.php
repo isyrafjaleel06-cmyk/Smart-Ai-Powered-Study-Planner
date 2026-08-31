@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 if (!isset($_SESSION['student_id'])) {
     header("Location: login.php");
@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Invalid email format!';
         } else {
-            // Check username uniqueness (exclude current user)
             $chk = $conn->prepare("SELECT student_id FROM student WHERE username = ? AND student_id != ?");
             $chk->bind_param("si", $new_username, $student_id);
             $chk->execute();
@@ -138,6 +137,7 @@ if (!empty($student_data['preferred_time'])) {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .user-info { display: flex; align-items: center; gap: 12px; }
         .user-profile {
             display: flex; align-items: center; gap: 12px;
             cursor: pointer; transition: all 0.3s ease;
@@ -152,6 +152,15 @@ if (!empty($student_data['preferred_time'])) {
             box-shadow: 0 4px 15px rgba(102,126,234,0.3);
         }
         .user-name { font-size: 14px; font-weight: 600; color: #667eea; }
+        .logout-btn {
+            padding: 9px 18px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; font-weight: 600; transition: all 0.3s ease;
+            text-decoration: none; display: inline-block;
+            background: white; color: #333;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logout-btn:hover { background: #f5f5f5; border-color: #667eea; color: #667eea; transform: translateY(-2px); }
 
         /* ── Layout ── */
         .main-container {
@@ -207,29 +216,49 @@ if (!empty($student_data['preferred_time'])) {
         /* ── Page Header ── */
         .page-header {
             background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+            border-radius: 20px; padding: 25px 30px; margin-bottom: 25px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 0 40px rgba(102,126,234,0.1);
             border: 1px solid rgba(255,255,255,0.2);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
             animation: slideUp 0.6s ease-out;
         }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(30px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .page-title   { font-size: 28px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .page-title   { font-size: 26px; font-weight: 700; color: #333; margin-bottom: 5px; }
         .page-subtitle { font-size: 14px; color: #999; font-weight: 500; }
+
+        /* ── Continue Button ── */
+        .btn-continue {
+            padding: 12px 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            text-decoration: none; display: inline-flex;
+            align-items: center; gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102,126,234,0.35);
+            white-space: nowrap;
+        }
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(102,126,234,0.5);
+        }
 
         /* ── Alerts ── */
         .alert {
             padding: 15px; border-radius: 12px; margin-bottom: 20px;
             font-size: 14px; animation: slideDown 0.4s ease-out;
+            display: flex; align-items: center; gap: 10px;
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .alert-error   { background: rgba(230, 36, 22, 0.1);  color: #d32f2f; border-left: 4px solid #d32f2f; }
-        .alert-success { background: rgba(22, 223, 29, 0.1);  color:rgb(19, 240, 52); border-left: 4px solidrgb(41, 188, 48); }
+        .alert-error   { background: rgba(244,67,54,0.1);  color: #d32f2f; border-left: 4px solid #d32f2f; }
+        .alert-success { background: rgba(76,175,80,0.1);  color: #388e3c; border-left: 4px solid #388e3c; }
 
         /* ── Card ── */
         .card {
@@ -254,11 +283,8 @@ if (!empty($student_data['preferred_time'])) {
 
         /* ── Profile Grid ── */
         .profile-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
         }
-
         .form-group { margin-bottom: 0; }
 
         label {
@@ -267,9 +293,7 @@ if (!empty($student_data['preferred_time'])) {
         }
 
         /* ── Inputs ── */
-        .input-wrap {
-            position: relative; display: flex; align-items: center;
-        }
+        .input-wrap { position: relative; display: flex; align-items: center; }
 
         input[type="email"],
         input[type="password"],
@@ -282,17 +306,12 @@ if (!empty($student_data['preferred_time'])) {
             background: #f8f9fa; color: #333;
             transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
         }
-
         input[type="password"] { padding-right: 44px; }
-
         input:focus {
             outline: none; border-color: #667eea;
             background: white; box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
         }
-
-        input:disabled {
-            background: #f0f0f0; color: #aaa; cursor: not-allowed; border-color: #e0e0e0;
-        }
+        input:disabled { background: #f0f0f0; color: #aaa; cursor: not-allowed; border-color: #e0e0e0; }
 
         .eye-btn {
             position: absolute; right: 12px;
@@ -304,23 +323,16 @@ if (!empty($student_data['preferred_time'])) {
         .eye-btn:hover { color: #667eea; }
 
         /* ── Time Grid ── */
-        .time-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
-        }
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
         /* ── Checkboxes ── */
-        .checkbox-group {
-            display: flex; gap: 20px; margin-top: 6px; flex-wrap: wrap;
-        }
-        .checkbox-option {
-            display: flex; align-items: center; gap: 9px; cursor: pointer;
-        }
+        .checkbox-group { display: flex; gap: 20px; margin-top: 6px; flex-wrap: wrap; }
+        .checkbox-option { display: flex; align-items: center; gap: 9px; cursor: pointer; }
         .checkbox-option input[type="checkbox"] { display: none; }
         .checkbox-box {
             width: 20px; height: 20px; border-radius: 6px;
             border: 2px solid #ddd; display: flex; align-items: center;
-            justify-content: center; background: white;
-            transition: all 0.2s ease;
+            justify-content: center; background: white; transition: all 0.2s ease;
         }
         .checkbox-option input[type="checkbox"]:checked + .checkbox-box {
             border-color: #667eea; background: #667eea;
@@ -331,70 +343,72 @@ if (!empty($student_data['preferred_time'])) {
         .checkbox-label { font-size: 14px; font-weight: 500; color: #555; }
 
         /* ── Slider ── */
-        .slider-wrap { padding: 8px 0; }
-
+        .slider-wrap { padding: 10px 0; }
         .slider-track {
-            position: relative; height: 6px;
-            background: #e8e8e8; border-radius: 3px; margin-bottom: 14px;
+            position: relative; height: 8px;
+            background: #e8e8e8; border-radius: 10px; margin-bottom: 18px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
         }
         .slider-fill {
             position: absolute; left: 0; top: 0; height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 3px; transition: width 0.1s linear; pointer-events: none;
+            border-radius: 10px; pointer-events: none;
+            transition: width 0.05s linear;
         }
-
         .slider {
             position: absolute; top: 50%; left: 0;
             transform: translateY(-50%);
             width: 100%; height: 100%;
             -webkit-appearance: none; appearance: none;
-            background: transparent; outline: none; cursor: pointer;
-            margin: 0;
+            background: transparent; outline: none; cursor: pointer; margin: 0;
         }
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 22px; height: 22px; border-radius: 50%;
-            background: white;
-            border: 3px solid #667eea;
-            box-shadow: 0 2px 10px rgba(102,126,234,0.35);
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: white; border: 3px solid #667eea;
+            box-shadow: 0 2px 12px rgba(102,126,234,0.4);
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
         }
         .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-            box-shadow: 0 4px 16px rgba(102,126,234,0.5);
+            transform: scale(1.2);
+            box-shadow: 0 4px 20px rgba(102,126,234,0.55);
+            border-color: #764ba2;
+        }
+        .slider:active::-webkit-slider-thumb {
+            cursor: grabbing; transform: scale(1.1);
+            box-shadow: 0 6px 24px rgba(102,126,234,0.6);
         }
         .slider::-moz-range-thumb {
-            width: 22px; height: 22px; border-radius: 50%;
+            width: 24px; height: 24px; border-radius: 50%;
             background: white; border: 3px solid #667eea;
-            box-shadow: 0 2px 10px rgba(102,126,234,0.35);
-            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(102,126,234,0.4);
+            cursor: grab;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .slider::-moz-range-thumb:hover {
-            transform: scale(1.15);
-            box-shadow: 0 4px 16px rgba(102,126,234,0.5);
+            transform: scale(1.2);
+            box-shadow: 0 4px 20px rgba(102,126,234,0.55);
         }
-
-        .slider-labels {
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .slider-labels { display: flex; justify-content: space-between; align-items: center; }
         .slider-min-max { font-size: 11px; color: #bbb; font-weight: 600; }
         .slider-current {
-            font-size: 22px; font-weight: 800;
+            font-size: 26px; font-weight: 800;
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            transition: all 0.2s ease; min-width: 80px; text-align: center;
         }
 
-        /* ── Buttons ── */
+        /* ── Save Button ── */
         .btn-save {
             width: 100%; padding: 13px;
-            background: linear-gradient(135deg,rgb(89, 117, 243) 0%,rgb(94, 99, 238) 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; border: none; border-radius: 10px;
             cursor: pointer; font-size: 14px; font-weight: 700;
             transition: all 0.3s ease; letter-spacing: 0.4px;
             box-shadow: 0 8px 20px rgba(102,126,234,0.35);
             margin-top: 22px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-save:hover {
             transform: translateY(-2px);
@@ -404,9 +418,9 @@ if (!empty($student_data['preferred_time'])) {
         /* ── Info Note ── */
         .info-note {
             margin-top: 20px; padding: 15px;
-            background: rgba(4, 4, 5, 0.06);
-            border-left: 4px solidrgb(9, 10, 14); border-radius: 8px;
-            font-size: 13px; color:rgb(19, 19, 50); font-weight: 500;
+            background: rgba(102,126,234,0.06);
+            border-left: 4px solid #667eea; border-radius: 8px;
+            font-size: 13px; color: #667eea; font-weight: 500;
         }
 
         /* ── Scrollbar ── */
@@ -423,33 +437,22 @@ if (!empty($student_data['preferred_time'])) {
         @media (max-width: 640px) {
             .profile-grid { grid-template-columns: 1fr; }
             .time-grid    { grid-template-columns: 1fr; }
+            .page-header  { flex-direction: column; align-items: flex-start; }
+            .btn-continue { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
 
+<!-- Header -->
 <div class="header">
     <div class="logo">Smart AI-Powered Study Planner</div>
-    <div style="display:flex; align-items:center; gap:12px;">
+    <div class="user-info">
         <a href="manage_profile.php" class="user-profile">
             <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
             <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
         </a>
-        <a href="logout.php" style="
-            padding: 9px 18px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        " onmouseover="this.style.background='#667eea'; this.style.color='white';"
-           onmouseout="this.style.background='white'; this.style.color='#667eea';">
-             Log Out
-        </a>
+        <a href="logout.php" class="logout-btn">Logout</a>
     </div>
 </div>
 
@@ -457,54 +460,70 @@ if (!empty($student_data['preferred_time'])) {
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="dashboard.php"           class="sidebar-item">Dashboard</a>
-        <a href="#"                        class="sidebar-item" id="studyMenu">Study</a>
+        <a href="dashboard.php"            class="sidebar-item">Dashboard</a>
+        <a href="#"                         class="sidebar-item" id="studyMenu">Study</a>
         <div class="sidebar-submenu">
             <a href="class_timetable.php"    class="sidebar-item">Class Timetable</a>
             <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
         </div>
-        <a href="timetable.php"           class="sidebar-item">Timetable</a>
-        <a href="progress.php"            class="sidebar-item">Progress</a>
-        <a href="manage_profile.php"      class="sidebar-item active"> Manage Profile</a>
+        <a href="timetable.php"            class="sidebar-item">AI Timetable</a>
+        <a href="progress.php"             class="sidebar-item">Progress</a>
+        <a href="manage_profile.php"       class="sidebar-item active">Manage Profile</a>
     </div>
 
     <!-- Content -->
     <div class="content">
 
+        <!-- Page Header with Continue Button -->
         <div class="page-header">
-            <h1 class="page-title">Manage Profile</h1>
-            <p class="page-subtitle">Update your personal information and study preferences</p>
+            <div>
+                <h1 class="page-title">Manage Profile</h1>
+                <p class="page-subtitle">Update your personal information and study preferences</p>
+            </div>
+            <a href="class_timetable.php" class="btn-continue">
+                Class Timetable
+            </a>
         </div>
 
-        <?php if ($error):   ?><div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <?php if ($success): ?><div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div><?php endif; ?>
+        <?php if ($error):   ?>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <?php echo htmlspecialchars($success); ?>
+            </div>
+        <?php endif; ?>
 
-        <!-- ── Profile Information + Password in one card ── -->
+        <!-- Profile Form -->
         <form method="POST" action="manage_profile.php">
             <input type="hidden" name="action" value="update_profile">
 
             <div class="card">
-                <div class="card-title">Profile Information</div>
+                <div class="card-title">
+                    Profile Information
+                </div>
                 <div class="profile-grid">
-
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username"
                                value="<?php echo htmlspecialchars($username); ?>" required minlength="3">
                     </div>
-
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" name="email"
                                value="<?php echo htmlspecialchars($email); ?>" required>
                     </div>
-
                 </div>
             </div>
 
-            <!-- ── Wake / Sleep ── -->
             <div class="card">
-                <div class="card-title">Wake Up & Sleep Time</div>
+                <div class="card-title">
+                    Wake Up & Sleep Time
+                </div>
                 <div class="time-grid">
                     <div class="form-group">
                         <label for="wake_up_time">Wake Up Time</label>
@@ -519,9 +538,10 @@ if (!empty($student_data['preferred_time'])) {
                 </div>
             </div>
 
-            <!-- ── Preferred Study Time ── -->
             <div class="card">
-                <div class="card-title">Preferred Study Time</div>
+                <div class="card-title">
+                    Preferred Study Time
+                </div>
                 <div class="checkbox-group">
                     <?php foreach (['Morning','Afternoon','Night'] as $period): ?>
                     <label class="checkbox-option">
@@ -534,11 +554,12 @@ if (!empty($student_data['preferred_time'])) {
                 </div>
             </div>
 
-            <!-- ── Max Study Hours ── -->
             <div class="card">
-                <div class="card-title">Max Study Hours Per Day</div>
+                <div class="card-title">
+                    Max Study Hours Per Day
+                </div>
                 <div class="slider-wrap">
-                    <div class="slider-track" id="sliderTrack">
+                    <div class="slider-track">
                         <div class="slider-fill" id="sliderFill"></div>
                         <input type="range" class="slider" id="studyHoursSlider"
                                name="max_study_hours" min="1" max="12"
@@ -552,47 +573,54 @@ if (!empty($student_data['preferred_time'])) {
                 </div>
             </div>
 
-            <button type="submit" class="btn-save">Save Profile Settings</button>
+            <button type="submit" class="btn-save">
+                
+                Save Profile Settings
+            </button>
         </form>
 
-        <!-- ── Change Password ── -->
+        <!-- Change Password Form -->
         <form method="POST" action="manage_profile.php" style="margin-top: 20px;">
             <input type="hidden" name="action" value="change_password">
             <div class="card">
-                <div class="card-title">Change Password</div>
+                <div class="card-title">
+                    Change Password
+                </div>
                 <div class="profile-grid">
-
                     <div class="form-group">
                         <label for="current_password">Current Password</label>
                         <div class="input-wrap">
-                            <input type="password" id="current_password" name="current_password" required placeholder="Enter current password">
+                            <input type="password" id="current_password" name="current_password"
+                                   required placeholder="Enter current password">
                             <button type="button" class="eye-btn" onclick="togglePwd('current_password', this)">
                                 <i class="fa fa-eye"></i>
                             </button>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="new_password">New Password</label>
                         <div class="input-wrap">
-                            <input type="password" id="new_password" name="new_password" required placeholder="Min 6 characters">
+                            <input type="password" id="new_password" name="new_password"
+                                   required placeholder="Min 6 characters">
                             <button type="button" class="eye-btn" onclick="togglePwd('new_password', this)">
                                 <i class="fa fa-eye"></i>
                             </button>
                         </div>
                     </div>
-
                 </div>
-                <button type="submit" class="btn-save">Change Password</button>
+                <button type="submit" class="btn-save">
+                    Change Password
+                </button>
             </div>
         </form>
 
         <div class="info-note">
-             <strong>Tip:</strong> Your wake-up time, sleep time, and preferred study time help the AI create a personalised study schedule just for you!
+            <i class="fa-solid fa-lightbulb"></i>
+            <strong> Tip:</strong> Your wake-up time, sleep time, and preferred study time help the AI create a personalised study schedule just for you!
         </div>
 
-    </div><!-- /content -->
-</div><!-- /main-container -->
+    </div>
+</div>
 
 <script>
     // ── Slider ──────────────────────────────────────────
@@ -601,20 +629,25 @@ if (!empty($student_data['preferred_time'])) {
     const display = document.getElementById('hoursDisplay');
 
     function updateSlider() {
-        const pct = ((slider.value - 1) / (12 - 1)) * 100;
-        fill.style.width   = pct + '%';
-        display.textContent = slider.value + ' hrs';
+        const min = Number(slider.min) || 1;
+        const max = Number(slider.max) || 12;
+        const val = Number(slider.value);
+        const pct = ((val - min) / (max - min)) * 100;
+        fill.style.width    = pct + '%';
+        display.textContent = val + ' hrs';
+        display.style.transform = 'scale(1.08)';
+        setTimeout(() => display.style.transform = 'scale(1)', 120);
     }
 
     slider.addEventListener('input', updateSlider);
-    updateSlider(); // init on load
+    updateSlider();
 
     // ── Password toggle ──────────────────────────────────
     function togglePwd(inputId, btn) {
         const input = document.getElementById(inputId);
         const icon  = btn.querySelector('i');
         const isHidden = input.type === 'password';
-        input.type  = isHidden ? 'text' : 'password';
+        input.type     = isHidden ? 'text' : 'password';
         icon.className = isHidden ? 'fa fa-eye-slash' : 'fa fa-eye';
     }
 

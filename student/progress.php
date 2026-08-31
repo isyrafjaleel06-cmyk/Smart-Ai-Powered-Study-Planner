@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config.php';
+require_once '../config.php';
 
 if (!isset($_SESSION['student_id'])) {
     header("Location: login.php");
@@ -483,7 +483,7 @@ function getConfBadge($c) {
 
 <!-- Header -->
 <div class="header">
-    <div class="logo">📚 Smart AI-Powered Study Planner</div>
+    <div class="logo">Smart AI-Powered Study Planner</div>
     <a href="manage_profile.php" class="user-profile">
         <div class="user-avatar"><?php echo strtoupper(substr($username, 0, 1)); ?></div>
         <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
@@ -495,15 +495,15 @@ function getConfBadge($c) {
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="dashboard.php"          class="sidebar-item">📊 Dashboard</a>
-        <a href="#"                       class="sidebar-item" id="studyMenu">📖 Study</a>
+        <a href="dashboard.php"          class="sidebar-item">Dashboard</a>
+        <a href="#"                       class="sidebar-item" id="studyMenu">Study</a>
         <div class="sidebar-submenu">
-            <a href="class_timetable.php"    class="sidebar-item">📅 Class Timetable</a>
-            <a href="personal_study_plan.php" class="sidebar-item">📝 Personal Plan</a>
+            <a href="class_timetable.php"    class="sidebar-item">Class Timetable</a>
+            <a href="personal_study_plan.php" class="sidebar-item">Personal Plan</a>
         </div>
-        <a href="timetable.php"          class="sidebar-item">⏰ Timetable</a>
-        <a href="progress.php"           class="sidebar-item active">📈 Progress</a>
-        <a href="manage_profile.php"     class="sidebar-item">⚙️ Manage Profile</a>
+        <a href="timetable.php"          class="sidebar-item">AI Timetable</a>
+        <a href="progress.php"           class="sidebar-item active">Progress</a>
+        <a href="manage_profile.php"     class="sidebar-item">Manage Profile</a>
     </div>
 
     <!-- Content -->
@@ -512,20 +512,19 @@ function getConfBadge($c) {
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">📈 Study Progress</h1>
+                <h1 class="page-title">Study Progress</h1>
                 <p class="page-subtitle">
                     Week of <?php echo date('d M', strtotime('monday this week')); ?> –
                     <?php echo date('d M Y', strtotime('sunday this week')); ?>
                 </p>
             </div>
             <div class="header-actions">
-                <a href="timetable.php" class="btn-back">← Back to Timetable</a>
-                <a href="manage_profile.php" class="btn-profile">⚙️ Manage Profile</a>
+                <a href="timetable.php" class="btn-back">Back to Timetable</a>
+                <a href="manage_profile.php" class="btn-profile"> Manage Profile</a>
             </div>
         </div>
-
-        <?php if ($error):   ?><div class="alert alert-error">❌ <?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <?php if ($success): ?><div class="alert alert-success">✅ <?php echo htmlspecialchars($success); ?></div><?php endif; ?>
+        <?php if ($error):   ?><div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
+        <?php if ($success): ?><div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div><?php endif; ?>
 
         <!-- Stats -->
         <div class="stats-row">
@@ -560,11 +559,10 @@ function getConfBadge($c) {
 
         <!-- Table -->
         <div class="table-card">
-            <div class="card-title">📋 Session Details</div>
+            <div class="card-title">Session Details</div>
 
             <?php if (empty($sessions)): ?>
                 <div class="empty-state">
-                    <div class="empty-state-icon">📭</div>
                     <div class="empty-state-title">No Sessions This Week</div>
                     <div class="empty-state-text">Go to the <a href="timetable.php" style="color:#667eea;font-weight:700;">Timetable</a> page and generate your AI Study Plan first.</div>
                 </div>
@@ -620,7 +618,7 @@ function getConfBadge($c) {
                                         <input type="text" name="remark" class="remark-input"
                                                value="<?php echo htmlspecialchars($s['remark'] ?? ''); ?>"
                                                placeholder="Add a note…">
-                                        <button type="submit" class="btn-save-remark">💾</button>
+                                        <button type="submit" class="btn-save-remark">Save</button>
                                     </form>
                                 <?php elseif (!$isDone): ?>
                                     <!-- Remark shown in done form below -->
@@ -636,10 +634,10 @@ function getConfBadge($c) {
                                         <input type="hidden" name="subject" value="<?php echo htmlspecialchars($s['subject']); ?>">
                                         <input type="text" name="remark" class="remark-input"
                                                placeholder="Optional remark…" style="min-width:130px;">
-                                        <button type="submit" class="btn-done">✓ Done</button>
+                                        <button type="submit" class="btn-done">Done</button>
                                     </form>
                                 <?php else: ?>
-                                    <span style="font-size:12px; color:#10b981; font-weight:600;">✔ Completed</span>
+                                    <span style="font-size:12px; color:#10b981; font-weight:600;">Completed</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -656,7 +654,7 @@ function getConfBadge($c) {
 <div class="modal-overlay" id="confModal">
     <div class="modal-box">
         <div class="modal-title">
-            <span>✏️ Edit Confidence Level</span>
+            <span>Edit Confidence Level</span>
             <button class="close-btn" onclick="closeConfModal()">✕</button>
         </div>
         <div class="modal-sub" id="confModalSub">Subject name</div>
@@ -676,7 +674,7 @@ function getConfBadge($c) {
                 <span>0% Critical</span><span>50% Intermediate</span><span>100% Mastered</span>
             </div>
 
-            <button type="submit" class="btn-modal-save">💾 Save Confidence Level</button>
+            <button type="submit" class="btn-modal-save">Save Confidence Level</button>
             <button type="button" class="btn-modal-cancel" onclick="closeConfModal()">Cancel</button>
         </form>
     </div>

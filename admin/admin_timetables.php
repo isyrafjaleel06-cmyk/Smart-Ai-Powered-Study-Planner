@@ -427,13 +427,13 @@ function confColor($c) {
     </div>
     <nav class="sidebar-nav">
         <div class="nav-section-title">Main</div>
-        <a href="admin_dashboard.php" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="admin_dashboard.php" class="nav-item"> Dashboard</a>
         <div class="nav-section-title">Management</div>
-        <a href="admin_students.php"  class="nav-item"><i class="fa-solid fa-users"></i> All Students</a>
-        <a href="admin_timetables.php" class="nav-item active"><i class="fa-solid fa-calendar-week"></i> AI Timetables</a>
-        <a href="admin_progress.php"  class="nav-item"><i class="fa-solid fa-chart-line"></i> Progress Reports</a>
+        <a href="admin_students.php"  class="nav-item"> All Students</a>
+        <a href="admin_timetables.php" class="nav-item active"> AI Timetables</a>
+        <a href="admin_progress.php"  class="nav-item"> Progress Reports</a>
         <div class="nav-section-title">System</div>
-        <a href="../student/login.php" class="nav-item" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Student Portal</a>
+        <a href="../student/login.php" class="nav-item" target="_blank"> Student Portal</a>
     </nav>
     <div class="sidebar-footer">
         <div class="admin-info">

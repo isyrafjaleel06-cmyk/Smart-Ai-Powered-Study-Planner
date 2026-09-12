@@ -11,6 +11,7 @@ require_once '../config.php';
 
 $error = '';
 
+//login process
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
@@ -289,7 +290,7 @@ $conn->close();
         <div class="divider"><span>or</span></div>
 
         <div class="back-link">
-            Not an admin? <a href="../login.php">Go to Student Login</a>
+            Not an admin? <a href="../student/login.php">Go to Student Login</a>
         </div>
 
         <div class="security-note">

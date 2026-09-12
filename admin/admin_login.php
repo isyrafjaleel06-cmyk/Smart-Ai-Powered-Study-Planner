@@ -13,9 +13,11 @@ $error = '';
 
 //login process
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
+    //check if username and password are empty
     if (empty($username) || empty($password)) {
         $error = 'Username and password are required!';
     } else {

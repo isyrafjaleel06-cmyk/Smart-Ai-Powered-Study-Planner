@@ -257,8 +257,8 @@ if (!empty($student_data['preferred_time'])) {
             from { opacity: 0; transform: translateY(-20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .alert-error   { background: rgba(244,67,54,0.1);  color: #d32f2f; border-left: 4px solid #d32f2f; }
-        .alert-success { background: rgba(76,175,80,0.1);  color: #388e3c; border-left: 4px solid #388e3c; }
+        .alert-error   { background: rgba(244,67,54,0.1);  color:rgb(223, 27, 27); border-left: 4px solid #d32f2f; }
+        .alert-success { background: rgba(76,175,80,0.1);  color:rgb(30, 211, 39); border-left: 4px solid #388e3c; }
 
         /* ── Card ── */
         .card {
@@ -402,7 +402,7 @@ if (!empty($student_data['preferred_time'])) {
         /* ── Save Button ── */
         .btn-save {
             width: 100%; padding: 13px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,rgb(50, 81, 219) 0%,rgb(109, 45, 173) 100%);
             color: white; border: none; border-radius: 10px;
             cursor: pointer; font-size: 14px; font-weight: 700;
             transition: all 0.3s ease; letter-spacing: 0.4px;
@@ -419,8 +419,8 @@ if (!empty($student_data['preferred_time'])) {
         .info-note {
             margin-top: 20px; padding: 15px;
             background: rgba(102,126,234,0.06);
-            border-left: 4px solid #667eea; border-radius: 8px;
-            font-size: 13px; color: #667eea; font-weight: 500;
+            border-left: 4px solidrgb(12, 13, 15); border-radius: 8px;
+            font-size: 13px; color:rgb(8, 12, 17); font-weight: 500;
         }
 
         /* ── Scrollbar ── */
@@ -487,13 +487,11 @@ if (!empty($student_data['preferred_time'])) {
 
         <?php if ($error):   ?>
             <div class="alert alert-error">
-                <i class="fa-solid fa-circle-exclamation"></i>
                 <?php echo htmlspecialchars($error); ?>
             </div>
         <?php endif; ?>
         <?php if ($success): ?>
             <div class="alert alert-success">
-                <i class="fa-solid fa-circle-check"></i>
                 <?php echo htmlspecialchars($success); ?>
             </div>
         <?php endif; ?>
@@ -615,8 +613,7 @@ if (!empty($student_data['preferred_time'])) {
         </form>
 
         <div class="info-note">
-            <i class="fa-solid fa-lightbulb"></i>
-            <strong> Tip:</strong> Your wake-up time, sleep time, and preferred study time help the AI create a personalised study schedule just for you!
+             Your wake-up time, sleep time, and preferred study time help the AI create a personalised study schedule just for you!
         </div>
 
     </div>

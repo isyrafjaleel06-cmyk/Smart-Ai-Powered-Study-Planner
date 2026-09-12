@@ -962,7 +962,7 @@ $times = generateTimeSlots($maxEndTime);
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Class Timetable</h1>
-                    <p class="page-subtitle">Manage your class schedule - Add multiple subjects in the same time slot</p>
+                    <p class="page-subtitle">Manage your class timetable - Add multiple subjects in the same day slot</p>
                 </div>
                 
                 <!-- Navigation Buttons placed in top-right sketch location -->
@@ -984,7 +984,7 @@ $times = generateTimeSlots($maxEndTime);
             <div class="content-wrapper">
                 <!-- Calendar Card -->
                 <div class="calendar-card">
-                    <div class="card-title">Your Weekly Schedule</div>
+                    <div class="card-title">Your Weekly Timetable</div>
 
                     <!-- Calendar Grid -->
                     <div class="calendar-grid">
@@ -1061,7 +1061,7 @@ $times = generateTimeSlots($maxEndTime);
 
                     <!-- Note -->
                     <div class="calendar-note">
-                        <strong>Note:</strong> Fixed classes are time blocks that AI will respect and not plot study sessions. You can add multiple subjects in the same time slot! 
+                        <strong>Note:</strong> Fixed classes are time blocks that AI will respect and not plot study sessions. You can add multiple subjects in the same day slot! 
                         <?php 
                             if ($hasEveningClasses && $maxEndTime >= '23:00') {
                                 echo '<strong> You have late night classes! Grid extends up to midnight (00:00).</strong>';

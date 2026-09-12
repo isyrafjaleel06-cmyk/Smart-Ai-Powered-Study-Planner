@@ -444,7 +444,7 @@ $today = date('l');
             to   { opacity: 1; transform: translateY(0); }
         }
         .alert-error   { background: rgba(239,68,68,0.1);  color: #dc2626; border-left: 4px solid #dc2626; }
-        .alert-success { background: rgba(16,185,129,0.1); color: #059669; border-left: 4px solid #059669; }
+        .alert-success { background: rgba(16,185,129,0.1); color:rgb(15, 230, 33); border-left: 4px solid #059669; }
 
         /* ── Legend ── */
         .legend {

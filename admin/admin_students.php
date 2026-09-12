@@ -436,13 +436,13 @@ function confBadge($c) {
     </div>
     <nav class="sidebar-nav">
         <div class="nav-section-title">Main</div>
-        <a href="admin_dashboard.php" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="admin_dashboard.php" class="nav-item"> Dashboard</a>
         <div class="nav-section-title">Management</div>
-        <a href="admin_students.php" class="nav-item active"><i class="fa-solid fa-users"></i> All Students</a>
-        <a href="admin_timetables.php" class="nav-item"><i class="fa-solid fa-calendar-week"></i> AI Timetables</a>
-        <a href="admin_progress.php" class="nav-item"><i class="fa-solid fa-chart-line"></i> Progress Reports</a>
+        <a href="admin_students.php" class="nav-item active"> All Students</a>
+        <a href="admin_timetables.php" class="nav-item"> AI Timetables</a>
+        <a href="admin_progress.php" class="nav-item"> Progress Reports</a>
         <div class="nav-section-title">System</div>
-        <a href="../student/login.php" class="nav-item" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Student Portal</a>
+        <a href="../student/login.php" class="nav-item" target="_blank"> Student Portal</a>
     </nav>
     <div class="sidebar-footer">
         <div class="admin-info">
@@ -556,7 +556,7 @@ function confBadge($c) {
                             <td>
                                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                     <a href="admin_students.php?view=<?php echo $s['student_id']; ?><?php echo $search ? '&search='.urlencode($search) : ''; ?>" class="btn-view">
-                                        <i class="fa-solid fa-eye"></i> View
+                                         View
                                     </a>
                                     <form method="POST" action="admin_students.php" style="display:inline;"
                                           onsubmit="return confirm('Delete <?php echo htmlspecialchars($s['username']); ?>? This is permanent.')">
@@ -595,7 +595,7 @@ function confBadge($c) {
 
         <!-- Profile Info -->
         <div class="section">
-            <div class="section-title"><i class="fa-solid fa-user" style="color:#818cf8;"></i> Profile Info</div>
+            <div class="section-title"> Profile Info</div>
             <div class="info-grid">
                 <div class="info-box">
                     <div class="info-box-label">Wake Up Time</div>
@@ -623,7 +623,7 @@ function confBadge($c) {
 
         <!-- Subjects -->
         <div class="section">
-            <div class="section-title"><i class="fa-solid fa-book" style="color:#818cf8;"></i> Subjects (<?php echo count($view_subjects); ?>)</div>
+            <div class="section-title"> Subjects (<?php echo count($view_subjects); ?>)</div>
             <?php if (empty($view_subjects)): ?>
                 <p style="color:rgba(255,255,255,0.2); font-size:13px; text-align:center; padding:16px;">No subjects added.</p>
             <?php else: ?>
@@ -642,7 +642,7 @@ function confBadge($c) {
 
         <!-- Class Timetable -->
         <div class="section">
-            <div class="section-title"><i class="fa-solid fa-calendar-days" style="color:#818cf8;"></i> Class Timetable (<?php echo count($view_classes); ?>)</div>
+            <div class="section-title"> Class Timetable (<?php echo count($view_classes); ?>)</div>
             <?php if (empty($view_classes)): ?>
                 <p style="color:rgba(255,255,255,0.2); font-size:13px; text-align:center; padding:16px;">No classes added.</p>
             <?php else: ?>
@@ -658,7 +658,7 @@ function confBadge($c) {
 
         <!-- AI Timetable -->
         <div class="section">
-            <div class="section-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#818cf8;"></i> AI Timetable This Week (<?php echo count($view_timetable); ?>)</div>
+            <div class="section-title"> AI Timetable This Week (<?php echo count($view_timetable); ?>)</div>
             <?php if (empty($view_timetable)): ?>
                 <p style="color:rgba(255,255,255,0.2); font-size:13px; text-align:center; padding:16px;">No AI sessions this week.</p>
             <?php else: ?>
@@ -677,7 +677,7 @@ function confBadge($c) {
 
         <!-- Progress -->
         <div class="section">
-            <div class="section-title"><i class="fa-solid fa-chart-line" style="color:#818cf8;"></i> Recent Progress (<?php echo count($view_progress); ?>)</div>
+            <div class="section-title"> Recent Progress (<?php echo count($view_progress); ?>)</div>
             <?php if (empty($view_progress)): ?>
                 <p style="color:rgba(255,255,255,0.2); font-size:13px; text-align:center; padding:16px;">No progress records yet.</p>
             <?php else: ?>
@@ -708,7 +708,7 @@ function confBadge($c) {
                 transition:all 0.2s;
             " onmouseover="this.style.background='rgba(239,68,68,0.25)'"
                onmouseout="this.style.background='rgba(239,68,68,0.1)'">
-                <i class="fa-solid fa-trash"></i> Delete This Student Account
+                 Delete This Student Account
             </button>
         </form>
 

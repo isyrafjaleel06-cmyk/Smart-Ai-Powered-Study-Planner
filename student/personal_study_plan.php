@@ -237,8 +237,8 @@ $conn->close();
             from { opacity: 0; transform: translateY(-20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .alert-error   { background: rgba(244,67,54,0.1);  color: #d32f2f; border-left: 4px solid #d32f2f; }
-        .alert-success { background: rgba(76,175,80,0.1);  color: #388e3c; border-left: 4px solid #388e3c; }
+        .alert-error   { background: rgba(244,67,54,0.1);  color:rgb(219, 25, 25); border-left: 4px solid #d32f2f; }
+        .alert-success { background: rgba(76,175,80,0.1);  color:rgb(29, 219, 38); border-left: 4px solid #388e3c; }
 
         /* ── Card ── */
         .card {
@@ -386,8 +386,8 @@ $conn->close();
         .info-note {
             margin-top: 20px; padding: 15px;
             background: rgba(102,126,234,0.06);
-            border-left: 4px solid #667eea; border-radius: 8px;
-            font-size: 13px; color: #667eea; font-weight: 500;
+            border-left: 4px solidrgb(11, 12, 15); border-radius: 8px;
+            font-size: 13px; color:rgb(8, 8, 10); font-weight: 600;
         }
 
         /* ── Scrollbar ── */
@@ -455,13 +455,11 @@ $conn->close();
 
         <?php if ($error): ?>
             <div class="alert alert-error">
-                <i class="fa-solid fa-circle-exclamation"></i>
                 <?php echo htmlspecialchars($error); ?>
             </div>
         <?php endif; ?>
         <?php if ($success): ?>
             <div class="alert alert-success">
-                <i class="fa-solid fa-circle-check"></i>
                 <?php echo htmlspecialchars($success); ?>
             </div>
         <?php endif; ?>
@@ -492,14 +490,14 @@ $conn->close();
                                 <div class="subject-actions">
                                     <button type="button" class="btn-small btn-edit"
                                             onclick="editSubject(<?php echo $subject['plan_id']; ?>, '<?php echo htmlspecialchars($subject['subject'], ENT_QUOTES); ?>', <?php echo $subject['confidence_level']; ?>)">
-                                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                                         Edit
                                     </button>
                                     <form method="POST" action="personal_study_plan.php" style="display:inline;">
                                         <input type="hidden" name="action" value="delete_subject">
                                         <input type="hidden" name="plan_id" value="<?php echo $subject['plan_id']; ?>">
                                         <button type="submit" class="btn-small btn-delete"
                                                 onclick="return confirm('Delete this subject?')">
-                                            <i class="fa-solid fa-trash"></i> Delete
+                                             Delete
                                         </button>
                                     </form>
                                 </div>
@@ -523,8 +521,7 @@ $conn->close();
         </div>
 
         <div class="info-note">
-            <i class="fa-solid fa-lightbulb"></i>
-            <strong> Tip:</strong> Your study preferences (wake-up time, sleep time, preferred study time) can be configured in <strong>Manage Profile</strong> settings!
+             Your study preferences (wake-up time, sleep time, preferred study time) can be configured in <strong>Manage Profile</strong> settings!
         </div>
 
     </div>

@@ -90,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_student'])) {
     exit();
 }
 
+//
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -425,23 +426,23 @@ $conn->close();
     <nav class="sidebar-nav">
         <div class="nav-section-title">Main</div>
         <a href="admin_dashboard.php" class="nav-item active">
-            <i class="fa-solid fa-gauge-high"></i> Dashboard
+             Dashboard
         </a>
 
         <div class="nav-section-title">Management</div>
         <a href="admin_students.php" class="nav-item">
-            <i class="fa-solid fa-users"></i> All Students
+             All Students
         </a>
         <a href="admin_timetables.php" class="nav-item">
-            <i class="fa-solid fa-calendar-week"></i> AI Timetables
+             AI Timetables
         </a>
         <a href="admin_progress.php" class="nav-item">
-            <i class="fa-solid fa-chart-line"></i> Progress Reports
+             Progress Reports
         </a>
 
         <div class="nav-section-title">System</div>
         <a href="../student/login.php" class="nav-item" target="_blank">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> Student Portal
+             Student Portal
         </a>
     </nav>
 
@@ -542,7 +543,6 @@ $conn->close();
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
-                        <i class="fa-solid fa-chart-pie"></i>
                         Confidence Distribution
                     </div>
                 </div>
@@ -583,7 +583,6 @@ $conn->close();
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
-                        <i class="fa-solid fa-ranking-star"></i>
                         Most Added Subjects
                     </div>
                 </div>
@@ -606,7 +605,6 @@ $conn->close();
         <div class="table-card">
             <div class="card-header">
                 <div class="card-title">
-                    <i class="fa-solid fa-users"></i>
                     Recent Students
                     <span class="badge badge-purple" style="font-size:11px;"><?php echo $total_students; ?> total</span>
                 </div>
@@ -616,7 +614,7 @@ $conn->close();
                         <input type="text" id="searchInput" placeholder="Search students...">
                     </div>
                     <a href="admin_students.php" class="btn-view">
-                        <i class="fa-solid fa-arrow-right"></i> View All
+                         View All
                     </a>
                 </div>
             </div>
@@ -683,7 +681,7 @@ $conn->close();
                             <td>
                                 <div style="display:flex; gap:6px;">
                                     <a href="admin_students.php?view=<?php echo $s['student_id']; ?>" class="btn-view">
-                                        <i class="fa-solid fa-eye"></i> View
+                                         View
                                     </a>
                                     <form method="POST" action="admin_dashboard.php" style="display:inline;"
                                           onsubmit="return confirm('Delete <?php echo htmlspecialchars($s['username']); ?>? This will remove all their data permanently.')">

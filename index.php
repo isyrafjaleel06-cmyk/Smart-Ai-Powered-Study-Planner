@@ -661,6 +661,9 @@ if (isset($_SESSION['admin_id'])) {
     <!-- Hero Landing Section -->
     <header class="hero-section">
         <div class="hero-content">
+            <p style="color: #c00; font-weight: 700; text-align: center; margin-bottom: 15px;">
+                Important: Please use a PC or laptop for the best experience.
+            </p>
             <h1 class="hero-title">
                 Master Your Semester With <span class="highlight">Smart AI</span> Scheduling.
             </h1>

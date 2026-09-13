@@ -277,6 +277,10 @@ $conn->close();
             <i class="fa-solid fa-graduation-cap"></i>
         </div>
 
+        <p style="color: #c00; font-weight: 700; text-align: center; margin-bottom: 15px;">
+            Important: Please use a PC or laptop for the best experience.
+        </p>
+
         <h1 class="title">Sign In</h1>
         <p class="subtitle">Welcome back to Smart AI-Powered Study Planner</p>
 

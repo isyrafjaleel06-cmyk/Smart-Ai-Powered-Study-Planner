@@ -404,6 +404,10 @@ $conn->close();
                 </div>
             </div>
 
+            <p style="color: #c00; font-weight: 700; text-align: center; margin-bottom: 15px;">
+                Important: Please use a PC or laptop for the best experience.
+            </p>
+
             <h1 class="title">Sign Up</h1>
             <p class="subtitle">Join our Smart AI-Powered Study Planner</p>
 
